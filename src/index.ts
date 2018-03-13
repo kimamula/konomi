@@ -70,12 +70,12 @@ const enum InferState {
               const color = `#ff${hexadecimal}00`;
               context.strokeStyle = color;
               context.fillStyle = color;
-              context.font = '16px Mononoki';
+              context.font = '24px Mononoki';
               context.lineWidth = 5;
               context.beginPath();
               context.rect(x, y, width, height);
               context.stroke();
-              context.fillText(`${(score * 100).toFixed(2)} / 100`, x + 5, y + 21);
+              context.fillText(`${(score * 100).toFixed(2)} / 100`, x + 5, y + 29);
             }
             state = InferState.DONE;
           }
