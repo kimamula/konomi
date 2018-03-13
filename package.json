@@ -1,0 +1,27 @@
+{
+  "name": "konomi",
+  "version": "1.0.0",
+  "description": "Score human faces based on my personal preference",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kimamula/konomi.git"
+  },
+  "scripts": {
+    "build": "cp data/ml/final.fine_tuned.bin docs && parcel build src/index.html --out-dir docs --public-url /konomi",
+    "start": "cp data/ml/final.fine_tuned.bin dist && parcel src/index.html"
+  },
+  "author": "kimamula",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kimamula/konomi/issues"
+  },
+  "homepage": "https://github.com/kimamula/konomi#readme",
+  "dependencies": {
+    "@types/ndarray": "^1.0.5",
+    "keras-js": "^1.0.3",
+    "parcel-bundler": "^1.6.2",
+    "tslib": "^1.9.0",
+    "typescript": "^2.7.2"
+  },
+  "devDependencies": {}
+}
