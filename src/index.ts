@@ -15,7 +15,7 @@ const enum InferState {
 
   if ('FaceDetector' in window) {
     try {
-      const filepath = location.pathname === '/konomi' ? '/konomi/final.fine_tuned.bin' : '/dist/final.fine_tuned.bin';
+      const filepath = location.pathname === '/konomi/' ? '/konomi/final.fine_tuned.bin' : '/dist/final.fine_tuned.bin';
       const model = new KerasJS.Model({ filepath, gpu: KerasJS.GPU_SUPPORT });
       model.events.on('loadingProgress', progress => progressMessage.textContent = `Loading ${progress}%`);
       model.events.on('initProgress', progress => progress >= 100
@@ -50,12 +50,11 @@ const enum InferState {
         }
       });
       if (mediaStream.constraint) {
+        flipCamera.classList.remove('hidden');
         flipCamera.addEventListener('click', () => mediaStream.constraint.video.facingMode === 'environment'
           ? mediaStream.constraint.video.facingMode = 'user'
           : mediaStream.constraint.video.facingMode = 'environment'
         );
-      } else {
-        flipCamera.classList.add('hidden');
       }
 
       (async function renderLoop() {

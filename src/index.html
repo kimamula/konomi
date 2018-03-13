@@ -53,7 +53,7 @@
 </head>
 <body>
     <script>
-    if ('serviceWorker' in navigator && location.pathname === '/konomi') {
+    if ('serviceWorker' in navigator && location.pathname === '/konomi/') {
         window.addEventListener('load', function () {
             navigator.serviceWorker.register('/konomi/sw.js', {scope: '/konomi/'});
         });
@@ -72,7 +72,7 @@
             <p>Chrome (PC or Android) をご利用の場合は、 chrome://flags/#enable-experimental-web-platform-features を開き、有効にしてください。</p>
         </div>
     </div>
-    <span class="flip-camera">カメラ反転</span>
+    <span class="flip-camera hidden">カメラ反転</span>
     <script src="index.ts"></script>
 </body>
 </html>
