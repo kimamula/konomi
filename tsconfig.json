@@ -7,7 +7,8 @@
     "strict": true,
     "target": "es5",
     "esModuleInterop": true,
-    "importHelpers": true
+    "importHelpers": true,
+    "suppressImplicitAnyIndexErrors": true
   },
   "compileOnSave": true,
   "include": [

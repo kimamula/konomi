@@ -25,6 +25,9 @@
         canvas {
             display: block;
         }
+        video::-webkit-media-controls-fullscreen-button, video::-webkit-media-controls-play-button, video::-webkit-media-controls-pausebutton {
+            display: none;
+        }
 
         .hidden {
             display: none !important;
@@ -43,10 +46,20 @@
         .message.error .fallback {
             display: block;
         }
-        .flip-camera {
-            position: fixed;
+        .buttons {
+            display: flex;
+            position: absolute;
             right: 16px;
             bottom: 16px;
+        }
+        .buttons span {
+            padding: 0 1em;
+            border-radius: 3px;
+            line-height: 30px;
+            text-transform: uppercase;
+            text-decoration: none;
+            opacity: 0.5;
+            transition: opacity 300ms ease;
             cursor: pointer;
         }
     </style>
@@ -59,7 +72,13 @@
         });
     }
     </script>
-    <canvas class="hidden"></canvas>
+    <div class="main-contents hidden">
+        <canvas></canvas>
+        <div class="buttons">
+            <span class="flip-camera">カメラ反転</span>
+            <span class="force-landscape hidden">強制横画面</span>
+        </div>
+    </div>
     <div class="message">
         <div class="how-to-use">
             <p>モデルの初期化が完了すると、カメラから取り込んだ動画が画面に表示されます。</p>
@@ -72,7 +91,6 @@
             <p>Chrome (PC or Android) をご利用の場合は、 chrome://flags/#enable-experimental-web-platform-features を開き、有効にしてください。</p>
         </div>
     </div>
-    <span class="flip-camera hidden">カメラ反転</span>
     <script src="index.ts"></script>
 </body>
 </html>
