@@ -13,7 +13,6 @@ const enum InferState {
   const progressMessage = document.querySelector('.progress')!;
   const mainContents = document.querySelector('.main-contents')!;
   const flipCamera = document.querySelector('.flip-camera')!;
-  const forceLandscape = document.querySelector('.force-landscape')!;
 
   if ('FaceDetector' in window) {
     try {
@@ -33,6 +32,10 @@ const enum InferState {
       const video = document.createElement('video');
       video.srcObject = mediaStream;
       video.autoplay = true;
+      video.onloadedmetadata = () => {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+      };
 
       let state = InferState.TODO;
       let detectedFaces: (Face & { imageData: ImageData; })[] = [];
@@ -54,22 +57,6 @@ const enum InferState {
         constraints.facingMode = constraints.facingMode === 'environment' ? 'user' : 'environment';
         track.applyConstraints(constraints);
       });
-      const screenOrientation = screen['orientation'] as { lock(orientation: string): void; unlock(): void };
-      if (typeof window.orientation !== 'undefined' && screenOrientation) {
-        let isForceLandscape = false;
-        forceLandscape.classList.remove('hidden');
-        forceLandscape.addEventListener('click', e => {
-          e.stopPropagation();
-          isForceLandscape ? screenOrientation.unlock() : screenOrientation.lock('landscape');
-          isForceLandscape = !isForceLandscape;
-        });
-      }
-      const setCanvasSize = () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-      };
-      setCanvasSize();
-      window.addEventListener('resize', setCanvasSize);
 
       (async function renderLoop() {
         requestAnimationFrame(renderLoop);
@@ -82,16 +69,14 @@ const enum InferState {
               let hexadecimal = Math.floor((1 - score) * 256).toString(16);
               hexadecimal = hexadecimal.length === 1 ? `0${hexadecimal}` : hexadecimal;
               const color = `#ff${hexadecimal}00`;
-              const horizontalRatio = canvas.width / video.videoWidth;
-              const verticalRatio = canvas.height / video.videoHeight;
               context.strokeStyle = color;
               context.fillStyle = color;
               context.font = '24px Mononoki';
               context.lineWidth = 5;
               context.beginPath();
-              context.rect(x * horizontalRatio, y * verticalRatio, width * horizontalRatio, height * verticalRatio);
+              context.rect(x, y, width, height);
               context.stroke();
-              context.fillText(`${(score * 100).toFixed(2)} / 100`, x * horizontalRatio + 5, y * verticalRatio + 29);
+              context.fillText(`${(score * 100).toFixed(2)} / 100`, x + 5, y + 29);
             }
             state = InferState.DONE;
           }
@@ -101,13 +86,11 @@ const enum InferState {
           detectedFaces.forEach(({ boundingBox }) => {
             const { x, y, width, height } = boundingBox;
             const color = '#ffeb3b';
-            const horizontalRatio = canvas.width / video.videoWidth;
-            const verticalRatio = canvas.height / video.videoHeight;
             context.strokeStyle = color;
             context.fillStyle = color;
             context.lineWidth = 5;
             context.beginPath();
-            context.rect(x * horizontalRatio, y * verticalRatio, width * horizontalRatio, height * verticalRatio);
+            context.rect(x, y, width, height);
             context.stroke();
           });
           latestDrawnDetectedFaces = detectedFaces;
