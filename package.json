@@ -7,9 +7,8 @@
     "url": "git+https://github.com/kimamula/konomi.git"
   },
   "scripts": {
-    "convert-model": "cd node_modules/keras-js/python/ && python ./encoder.py -q ../../../data/ml/final.fine_tuned.h5",
-    "build": "cp data/ml/final.fine_tuned.bin docs && parcel build src/index.html --out-dir docs --public-url /konomi",
-    "start": "cp data/ml/final.fine_tuned.bin dist && parcel src/index.html"
+    "build": "cp -r data/dl-manifest docs && parcel build src/index.html --out-dir docs --public-url /konomi && node workbox-build",
+    "start": "cp -r data/dl-manifest dist && parcel src/index.html"
   },
   "author": "kimamula",
   "license": "MIT",
@@ -19,12 +18,10 @@
   "homepage": "https://github.com/kimamula/konomi#readme",
   "dependencies": {
     "@types/ndarray": "^1.0.5",
-    "keras-js": "^1.0.3",
+    "deeplearn": "^0.5.1",
     "parcel-bundler": "^1.6.2",
     "tslib": "^1.9.0",
-    "typescript": "^2.7.2"
-  },
-  "devDependencies": {
+    "typescript": "^2.7.2",
     "workbox-build": "^3.0.0"
   }
 }

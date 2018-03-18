@@ -1,4 +1,4 @@
-const captureSize = 299;
+const captureSize = 224;
 
 export function detectFacesDataURL(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): Promise<string[]> {
   const fd = new FaceDetector();
@@ -31,7 +31,7 @@ export function detectFacesDataURL(element: HTMLImageElement | HTMLCanvasElement
     );
 }
 
-export function detectFacesImageData(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): Promise<Face & { imageData: ImageData; }> {
+export function detectFacesImageData(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): Promise<(Face & { imageData: ImageData; })[]> {
   const fd = new FaceDetector();
 
   return fd.detect(element)

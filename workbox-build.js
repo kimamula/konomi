@@ -8,7 +8,8 @@ const workboxBuild = require('workbox-build');
     swDest: 'docs/sw.js',
     globDirectory: 'docs',
     globPatterns: [
-      '**\/*.{js,css,html,bin}',
+      '**\/*.{js,css,html}',
+      '**\/dl-manifest\/*'
     ]
   });
 })();
