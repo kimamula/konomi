@@ -1,96 +1,121 @@
 import { detectFacesImageData } from './detectFaces';
 import { DeeplearnModel } from './DeeplearnModel';
 
-const enum InferState {
-  TODO, PROCESSING, DONE
-}
-
 (async function () {
   const canvas = document.querySelector('canvas')!;
   const context = canvas.getContext('2d')!;
   const message = document.querySelector('.message')!;
   const mainContents = document.querySelector('.main-contents')!;
   const flipCamera = document.querySelector('.flip-camera')!;
+  const forceLandscape = document.querySelector('.force-landscape')!;
+
+  function orientationAPI(): Promise<{ lock(orientation: string): Promise<void>; unlock(): void; }> {
+    return (typeof window.orientation !== 'undefined') && (screen as any).orientation && (screen as any).orientation.lock
+      ? Promise.resolve((screen as any).orientation)
+      : Promise.reject(null);
+  }
 
   if ('FaceDetector' in window) {
     const manifestFilePath = `${location.pathname === '/konomi/' ? '/konomi' : '/dist'}/dl-manifest`;
     Promise
       .all([
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }),
+        navigator.mediaDevices.enumerateDevices()
+          .then(devices => devices.filter(({ kind }) => kind === 'videoinput').map(({ deviceId }) => deviceId))
+          .then(videoInputDevices => videoInputDevices.length === 0
+            ? Promise.reject(new Error('No available video input devices'))
+            : navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: videoInputDevices[0] } } })
+              .then(mediaStream => ({ mediaStream, videoInputDevices }))
+        ),
         DeeplearnModel.getInstance(manifestFilePath),
       ])
-      .then(([mediaStream, deeplearnModel]) => {
+      .then(([mediaDevicesInfo, deeplearnModel]) => {
+        const { mediaStream, videoInputDevices } = mediaDevicesInfo;
         message.classList.add('hidden');
         mainContents.classList.remove('hidden');
 
         const video = document.createElement('video');
         video.srcObject = mediaStream;
-        video.autoplay = true;
         video.onloadedmetadata = () => {
+          const mediaStream = video.srcObject;
+          const intervalFrames = 30;
+          let framesSinceLastDetection = 0;
+          let detectedFaces: { boundingBox: Face['boundingBox']; score: string; color: string; }[] = [];
+          (async function renderLoop() {
+            if (video.srcObject !== mediaStream) {
+              return;
+            }
+            requestAnimationFrame(renderLoop);
+            framesSinceLastDetection += 1;
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-        };
-
-        let state = InferState.TODO;
-        let detectedFaces: (Face & { imageData: ImageData; })[] = [];
-        let latestDrawnDetectedFaces: (Face & { imageData: ImageData; })[] = [];
-        document.body.addEventListener('click', () => {
-          if (video.paused) {
-            if (state === InferState.DONE) {
-              video.play();
-            }
-          } else {
-            video.pause();
-            state = InferState.TODO;
-          }
-        });
-        flipCamera.addEventListener('click', e => {
-          e.stopPropagation();
-          const track = mediaStream.getVideoTracks()[0];
-          const constraints = track.getConstraints();
-          constraints.facingMode = constraints.facingMode === 'environment' ? 'user' : 'environment';
-          track.applyConstraints(constraints).catch(e => console.error(e));
-        });
-
-        (async function renderLoop() {
-          requestAnimationFrame(renderLoop);
-          if (video.paused) {
-            if (state === InferState.TODO) {
-              state = InferState.PROCESSING;
-              for (const { boundingBox, imageData } of latestDrawnDetectedFaces) {
-                const score = await deeplearnModel.predict(imageData);
-                const { x, y, width, height } = boundingBox;
-                let hexadecimal = Math.floor((1 - score) * 256).toString(16);
-                hexadecimal = hexadecimal.length === 1 ? `0${hexadecimal}` : hexadecimal;
-                const color = `#ff${hexadecimal}00`;
-                context.strokeStyle = color;
-                context.fillStyle = color;
-                context.font = '24px Mononoki';
-                context.lineWidth = 5;
-                context.beginPath();
-                context.rect(x, y, width, height);
-                context.stroke();
-                context.fillText(`${(score * 100).toFixed(2)} / 100`, x + 5, y + 29);
-              }
-              state = InferState.DONE;
-            }
-          } else {
             context.clearRect(0, 0, canvas.width, canvas.height);
             context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, canvas.width, canvas.height);
-            detectedFaces.forEach(({ boundingBox }) => {
+            for (const { boundingBox, score, color } of detectedFaces) {
               const { x, y, width, height } = boundingBox;
-              const color = '#ffeb3b';
               context.strokeStyle = color;
               context.fillStyle = color;
+              context.font = '24px Mononoki';
               context.lineWidth = 5;
               context.beginPath();
               context.rect(x, y, width, height);
               context.stroke();
-            });
-            latestDrawnDetectedFaces = detectedFaces;
-            detectedFaces = await detectFacesImageData(video).catch(err => console.error(err) || []);
-          }
-        })();
+              context.fillText(`${score} / 100`, x + 5, y + 29);
+            }
+            if (framesSinceLastDetection < intervalFrames) {
+              return;
+            }
+            framesSinceLastDetection = 0;
+            detectFacesImageData(video)
+              .then(facesImageData => Promise
+                .all(facesImageData.map(({ boundingBox, imageData }) => deeplearnModel
+                  .predict(imageData)
+                  .then(score => {
+                    let hexadecimal = (score === 0 ? 255 : Math.floor((1 - score) * 256)).toString(16);
+                    hexadecimal = hexadecimal.length === 1 ? `0${hexadecimal}` : hexadecimal;
+                    const color = `#ff${hexadecimal}00`;
+                    return { boundingBox, score: (score * 100).toFixed(2), color };
+                  })
+                ))
+                .then(faces => detectedFaces = faces)
+              )
+              .catch(err => console.error(err) || []);
+          })();
+        };
+
+        const videoInputDevicesLength = videoInputDevices.length;
+        if (videoInputDevicesLength > 1) {
+          let isFlipping = false;
+          let currentDeviceIndex = 0;
+          flipCamera.addEventListener('click', async () => {
+            if (isFlipping) {
+              return;
+            }
+            isFlipping = true;
+            video.srcObject!.getTracks().forEach(track => track.stop());
+            currentDeviceIndex = (currentDeviceIndex + 1) % videoInputDevicesLength;
+            await navigator.mediaDevices
+              .getUserMedia({ video: { deviceId: { exact: videoInputDevices[currentDeviceIndex] } } })
+              .then(
+                mediaStream => video.srcObject = mediaStream,
+                err => console.error(err)
+              );
+            isFlipping = false;
+          });
+        } else {
+          flipCamera.classList.add('hidden');
+        }
+        orientationAPI().then(
+          api => forceLandscape.addEventListener('click', () => {
+            if (document.fullscreenElement) {
+              document.exitFullscreen();
+              api.unlock();
+            } else {
+              mainContents.requestFullscreen();
+              api.lock('landscape').catch(err => console.error(err));
+            }
+          }),
+          () => forceLandscape.classList.add('hidden')
+        );
       })
       .catch(e => {
         console.error(e);

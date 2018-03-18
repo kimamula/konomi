@@ -5,4 +5,3 @@ data
 dist/**
 !dist/.gitkeep
 src/**/*.js
-!src/sw.js

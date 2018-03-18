@@ -1,13 +1,35 @@
-importScripts('https://storage.googleapis.com/workbox-cdn/releases/3.0.0/workbox-sw.js');
+/**
+ * Welcome to your Workbox-powered service worker!
+ *
+ * You'll need to register this file in your web app and you should
+ * disable HTTP caching for this file too.
+ * See https://goo.gl/nhQhGp
+ *
+ * The rest of the code is auto-generated. Please don't update this file
+ * directly; instead, make changes to your Workbox build configuration
+ * and re-run your build process.
+ * See https://goo.gl/2aRDsh
+ */
 
-workbox.precaching.precacheAndRoute([
+importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.0.0/workbox-sw.js");
+
+workbox.core.setCacheNameDetails({prefix: "konomi"});
+
+workbox.skipWaiting();
+
+/**
+ * The workboxSW.precacheAndRoute() method efficiently caches and responds to
+ * requests for URLs in the manifest.
+ * See https://goo.gl/S9QRab
+ */
+self.__precacheManifest = [
   {
     "url": "6ca0258f5e847422f2ddc9b8d077d6c0.js",
-    "revision": "e875e96842f3e66ac54bf3b3c425bc4e"
+    "revision": "db73290cc16ef796d7b5d3966bb60f0e"
   },
   {
     "url": "index.html",
-    "revision": "7529391aad6e17238a84d3650ea6a9b7"
+    "revision": "a0a954d0ac84c3b1c0cd814588745807"
   },
   {
     "url": "dl-manifest/final_training_ops_biases_final_biases",
@@ -236,6 +258,10 @@ workbox.precaching.precacheAndRoute([
   {
     "url": "dl-manifest/MobilenetV1_Conv2d_13_pointwise_BatchNorm_moving_variance",
     "revision": "231b03a6d58be63f98037b8173bb7a04"
+  },
+  {
+    "url": "dl-manifest/MobilenetV1_Conv2d_13_pointwise_weights",
+    "revision": "149b42a88c75bdb720dda16d5279455d"
   },
   {
     "url": "dl-manifest/MobilenetV1_Conv2d_2_depthwise_BatchNorm_beta",
@@ -562,6 +588,10 @@ workbox.precaching.precacheAndRoute([
     "revision": "0d65cbc3007f733ce9f711a22ffec7aa"
   },
   {
+    "url": "dl-manifest/MobilenetV1_Logits_Conv2d_1c_1x1_weights",
+    "revision": "721b0c54a14ea6a54b4619f3c8acca6d"
+  },
+  {
     "url": "dl-manifest/MobilenetV1_MobilenetV1_Conv2d_0_BatchNorm_batchnorm_add_y",
     "revision": "86b54f333255e8bbb59481253ec7e970"
   },
@@ -673,4 +703,6 @@ workbox.precaching.precacheAndRoute([
     "url": "dl-manifest/MobilenetV1_Predictions_Reshape_shape",
     "revision": "fbc1ef38fd34b82147d0c199205475b8"
   }
-]);
+].concat(self.__precacheManifest || []);
+workbox.precaching.suppressWarnings();
+workbox.precaching.precacheAndRoute(self.__precacheManifest, {});

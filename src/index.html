@@ -1,10 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>kimamula's Konomi</title>
     <link rel="canonical" href="https://kimamula.github.io/konomi/" />
     <link rel="manifest" href="manifest.webmanifest">
     <style type="text/css">
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
         body {
             display: flex;
             justify-content: center;
@@ -24,6 +31,8 @@
 
         canvas {
             display: block;
+            width: 100%;
+            height: 100%;
         }
         video::-webkit-media-controls-fullscreen-button, video::-webkit-media-controls-play-button, video::-webkit-media-controls-pausebutton {
             display: none;
@@ -52,7 +61,7 @@
             right: 16px;
             bottom: 16px;
         }
-        .buttons span {
+        .buttons button {
             padding: 0 1em;
             border-radius: 3px;
             line-height: 30px;
@@ -68,22 +77,20 @@
     <script>
     if ('serviceWorker' in navigator && location.pathname === '/konomi/') {
         window.addEventListener('load', function () {
-            navigator.serviceWorker.register('/konomi/sw.js', {scope: '/konomi/'});
+            navigator.serviceWorker.register('/konomi/sw.js?' + Date.now(), { scope: '/konomi/' });
         });
     }
     </script>
     <div class="main-contents hidden">
         <canvas></canvas>
         <div class="buttons">
-            <span class="flip-camera">カメラ反転</span>
+            <button class="flip-camera">カメラ切替</button>
+            <button class="force-landscape">強制横画面</button>
         </div>
     </div>
     <div class="message">
         <div class="how-to-use">
             <p>ロード中...</p>
-            <p>モデルの初期化が完了すると、カメラから取り込んだ動画が画面に表示されます。</p>
-            <p>画面をタップ/クリックすると、その時点での静止画から顔の評価値を算出します。</p>
-            <p>もう一度タップすると動画に戻ります。</p>
         </div>
         <div class="fallback">
             <p>ご利用のブラウザでの動作はサポートされていません。</p>

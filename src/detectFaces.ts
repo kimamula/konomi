@@ -42,12 +42,28 @@ export function detectFacesImageData(element: HTMLImageElement | HTMLCanvasEleme
 }
 
 function writeFaceToCanvas(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, { boundingBox, landmarks }: Face): { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D; } {
-  const { x, y, width, height } = boundingBox;
-  if (width !== height) {
-    throw new Error('FaceDetector unexpectedly detected a rectangle which is not a square');
+  let { x, y, width, height } = boundingBox;
+  if (height > width) {
+    // mobile device
+    const halfDiff = (height - width) / 2;
+    const mouth = landmarks.find(({ type }) => type === 'mouth');
+    if (mouth && mouth.location.y <= y + height) {
+      // should widen width
+      x -= halfDiff;
+      width = height;
+    } else {
+      // should shorten height
+      y += halfDiff;
+      height = width;
+    }
+  } else if (height < width) {
+    // cannot happen???
+    throw new Error(`FaceDetector unexpectedly detected a rectangle whose width is larger than height: ${width} x ${height}`);
   }
   const [eye1, eye2] = landmarks.filter(({ type }) => type === 'eye');
-  const rotation = Math.atan((eye1.location.y - eye2.location.y) / (eye1.location.x - eye2.location.x));
+  const rotation = eye1 && eye2
+    ? Math.atan((eye1.location.y - eye2.location.y) / (eye1.location.x - eye2.location.x))
+    : 0;
   const ratio = Math.abs(Math.cos(rotation)) + Math.abs(Math.sin(rotation));
   const srcSize = width * ratio;
   const dstSize = captureSize * ratio;

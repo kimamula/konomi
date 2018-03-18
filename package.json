@@ -7,7 +7,7 @@
     "url": "git+https://github.com/kimamula/konomi.git"
   },
   "scripts": {
-    "build": "cp -r data/dl-manifest docs && parcel build src/index.html --out-dir docs --public-url /konomi && node workbox-build",
+    "build": "cp -r data/dl-manifest docs && parcel build src/index.html --out-dir docs --public-url /konomi && workbox generateSW workbox.config.js",
     "start": "cp -r data/dl-manifest dist && parcel src/index.html"
   },
   "author": "kimamula",
@@ -22,6 +22,6 @@
     "parcel-bundler": "^1.6.2",
     "tslib": "^1.9.0",
     "typescript": "^2.7.2",
-    "workbox-build": "^3.0.0"
+    "workbox-cli": "^3.0.0"
   }
 }
