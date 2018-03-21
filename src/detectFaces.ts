@@ -31,36 +31,42 @@ export function detectFacesDataURL(element: HTMLImageElement | HTMLCanvasElement
     );
 }
 
-export function detectFacesImageData(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): Promise<(Face & { imageData: ImageData; })[]> {
+export function detectFacesImageData(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): Promise<(Face & { imageData: ImageData; usedBoundingBox: Face['boundingBox']; })[]> {
   const fd = new FaceDetector();
 
   return fd.detect(element)
     .then(faces => faces.map(face => {
-      const { ctx } = writeFaceToCanvas(element, face);
-      return { boundingBox: face.boundingBox, landmarks: face.landmarks, imageData: ctx.getImageData(0, 0, captureSize, captureSize) };
+      const { ctx, usedBoundingBox } = writeFaceToCanvas(element, face);
+      return { boundingBox: face.boundingBox, landmarks: face.landmarks, imageData: ctx.getImageData(0, 0, captureSize, captureSize), usedBoundingBox };
     }));
 }
 
-function writeFaceToCanvas(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, { boundingBox, landmarks }: Face): { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D; } {
+function writeFaceToCanvas(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, { boundingBox, landmarks }: Face): { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D; usedBoundingBox: Face['boundingBox']; } {
   let { x, y, width, height } = boundingBox;
-  if (height > width) {
-    // mobile device
-    const halfDiff = (height - width) / 2;
-    const mouth = landmarks.find(({ type }) => type === 'mouth');
-    if (mouth && mouth.location.y <= y + height) {
-      // should widen width
-      x -= halfDiff;
-      width = height;
-    } else {
-      // should shorten height
-      y += halfDiff;
-      height = width;
-    }
-  } else if (height < width) {
-    // cannot happen???
-    throw new Error(`FaceDetector unexpectedly detected a rectangle whose width is larger than height: ${width} x ${height}`);
-  }
   const [eye1, eye2] = landmarks.filter(({ type }) => type === 'eye');
+  const [mouth] = landmarks.filter(({ type }) => type === 'mouth');
+  // Sadly, FaceDetector implementation of Android Chrome currently not equal to that of PC Chrome.
+  // As machine learning is executed using images collected with FaceDetector of PC Chrome,
+  // faces detected by Android Chrome have to be preprocessed here.
+  // It is possible another FaceDetector implementation requires another preprocessing.
+  if (width < height) {
+    // Faces detected by FaceDetector of Android Chrome are vertically long rectangles and sometimes cover only small area of the original faces,
+    // whereas those detected by FaceDetector of PC Chrome are squares and always cover enough area of the original faces.
+
+    // 1. Simply adjust the height.
+    y += (height - width) / 2;
+    height = width;
+
+    // 2. if the mouth goes out of the area, the area is too small, therefore x 1.8 both width and height
+    if (mouth && mouth.location.y > y + height) {
+      x -= 0.3 * width;
+      y -= 0.3 * height;
+      width = 1.6 * width;
+      height = 1.6 * height;
+    }
+  } else if (width > height) {
+    throw new Error('Unknown FaceDetector implementation');
+  }
   const rotation = eye1 && eye2
     ? Math.atan((eye1.location.y - eye2.location.y) / (eye1.location.x - eye2.location.x))
     : 0;
@@ -74,5 +80,5 @@ function writeFaceToCanvas(element: HTMLImageElement | HTMLCanvasElement | HTMLV
   ctx.translate(captureSize / 2, captureSize / 2);
   ctx.rotate(-rotation);
   ctx.drawImage(element, x - (srcSize - width) / 2, y - (srcSize - height) / 2, srcSize, srcSize, -dstSize / 2, -dstSize / 2, dstSize, dstSize);
-  return { canvas, ctx };
+  return { canvas, ctx, usedBoundingBox: { x, y, width, height } };
 }

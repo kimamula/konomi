@@ -39,7 +39,7 @@ import { DeeplearnModel } from './DeeplearnModel';
           const mediaStream = video.srcObject;
           const intervalFrames = 30;
           let framesSinceLastDetection = 0;
-          let detectedFaces: { boundingBox: Face['boundingBox']; score: string; color: string; }[] = [];
+          let detectedFaces: { usedBoundingBox: Face['boundingBox']; score: string; color: string; }[] = [];
           (async function renderLoop() {
             if (video.srcObject !== mediaStream) {
               return;
@@ -50,8 +50,8 @@ import { DeeplearnModel } from './DeeplearnModel';
             canvas.height = video.videoHeight;
             context.clearRect(0, 0, canvas.width, canvas.height);
             context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, canvas.width, canvas.height);
-            for (const { boundingBox, score, color } of detectedFaces) {
-              const { x, y, width, height } = boundingBox;
+            for (const { usedBoundingBox, score, color } of detectedFaces) {
+              const { x, y, width, height } = usedBoundingBox;
               context.strokeStyle = color;
               context.fillStyle = color;
               context.font = '24px Mononoki';
@@ -67,13 +67,13 @@ import { DeeplearnModel } from './DeeplearnModel';
             framesSinceLastDetection = 0;
             detectFacesImageData(video)
               .then(facesImageData => Promise
-                .all(facesImageData.map(({ boundingBox, imageData }) => deeplearnModel
+                .all(facesImageData.map(({ usedBoundingBox, imageData }) => deeplearnModel
                   .predict(imageData)
                   .then(score => {
                     let hexadecimal = (score === 0 ? 255 : Math.floor((1 - score) * 256)).toString(16);
                     hexadecimal = hexadecimal.length === 1 ? `0${hexadecimal}` : hexadecimal;
                     const color = `#ff${hexadecimal}00`;
-                    return { boundingBox, score: (score * 100).toFixed(2), color };
+                    return { usedBoundingBox, score: (score * 100).toFixed(2), color };
                   })
                 ))
                 .then(faces => detectedFaces = faces)
