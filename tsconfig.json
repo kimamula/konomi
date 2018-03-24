@@ -12,7 +12,8 @@
   },
   "compileOnSave": true,
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "ml/**/*"
   ],
   "exclude": [
     "node_modules"

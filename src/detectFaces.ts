@@ -45,7 +45,7 @@ function writeFaceToCanvas(element: HTMLImageElement | HTMLCanvasElement | HTMLV
   let { x, y, width, height } = boundingBox;
   const [eye1, eye2] = landmarks.filter(({ type }) => type === 'eye');
   const [mouth] = landmarks.filter(({ type }) => type === 'mouth');
-  // Sadly, FaceDetector implementation of Android Chrome currently not equal to that of PC Chrome.
+  // Sadly, FaceDetector implementation of Android Chrome currently does not equal to that of PC Chrome.
   // As machine learning is executed using images collected with FaceDetector of PC Chrome,
   // faces detected by Android Chrome have to be preprocessed here.
   // It is possible another FaceDetector implementation requires another preprocessing.

@@ -1,5 +1,6 @@
 import { detectFacesImageData } from './detectFaces';
 import { DeeplearnModel } from './DeeplearnModel';
+import { CheckpointLoader } from 'deeplearn';
 
 (async function () {
   const canvas = document.querySelector('canvas')!;
@@ -26,7 +27,7 @@ import { DeeplearnModel } from './DeeplearnModel';
             : navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: videoInputDevices[0] } } })
               .then(mediaStream => ({ mediaStream, videoInputDevices }))
         ),
-        DeeplearnModel.getInstance(manifestFilePath),
+        DeeplearnModel.getInstance(new CheckpointLoader(manifestFilePath)),
       ])
       .then(([mediaDevicesInfo, deeplearnModel]) => {
         const { mediaStream, videoInputDevices } = mediaDevicesInfo;
@@ -69,7 +70,8 @@ import { DeeplearnModel } from './DeeplearnModel';
               .then(facesImageData => Promise
                 .all(facesImageData.map(({ usedBoundingBox, imageData }) => deeplearnModel
                   .predict(imageData)
-                  .then(score => {
+                  .then(scores => {
+                    const score = scores[2];
                     let hexadecimal = (score === 0 ? 255 : Math.floor((1 - score) * 256)).toString(16);
                     hexadecimal = hexadecimal.length === 1 ? `0${hexadecimal}` : hexadecimal;
                     const color = `#ff${hexadecimal}00`;
