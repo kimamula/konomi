@@ -25,19 +25,19 @@ workbox.skipWaiting();
 self.__precacheManifest = [
   {
     "url": "6ca0258f5e847422f2ddc9b8d077d6c0.js",
-    "revision": "4407c07ea14284aed86d7d61baee644f"
+    "revision": "2b85e44303b1c9aa25cf287f8989a8ac"
   },
   {
     "url": "index.html",
-    "revision": "a0a954d0ac84c3b1c0cd814588745807"
+    "revision": "6c3e64bb50fa03ca121d970fb645205c"
   },
   {
     "url": "dl-manifest/final_training_ops_biases_final_biases",
-    "revision": "caab11a6973dd53e5a3d966a9fec8f46"
+    "revision": "86d06f17551672cd63352c2f78fea9d6"
   },
   {
     "url": "dl-manifest/final_training_ops_weights_final_weights",
-    "revision": "6503d30dd68c7d2d88725c26dd43f8c2"
+    "revision": "b62cf3a5a94378fcc59fd8a70caa8cc2"
   },
   {
     "url": "dl-manifest/manifest.json",
