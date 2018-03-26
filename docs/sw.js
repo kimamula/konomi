@@ -24,12 +24,16 @@ workbox.skipWaiting();
  */
 self.__precacheManifest = [
   {
+    "url": "330df6ab5699c2016aa1d93deb7a72de.png",
+    "revision": "561dd548067fbaea3278683f9128b8a0"
+  },
+  {
     "url": "6ca0258f5e847422f2ddc9b8d077d6c0.js",
-    "revision": "3219778639186964ad0f337df900b9f9"
+    "revision": "720b3b7371aa9d11a5a41364c747e64a"
   },
   {
     "url": "index.html",
-    "revision": "6c3e64bb50fa03ca121d970fb645205c"
+    "revision": "505511d3c0b48141bb0d715b0d895342"
   },
   {
     "url": "dl-manifest/final_training_ops_biases_final_biases",

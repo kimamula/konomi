@@ -1,5 +1,13 @@
 {
-  "short_name": "konomi",
-  "name": "Score human faces based on kimamula's personal preference",
-  "display": "standalone"
+  "short_name": "Konomi",
+  "name": "Konomi of @kimamula",
+  "display": "standalone",
+  "icons": [
+    {
+        "src": "./icon.png",
+        "sizes": "144x144",
+        "type": "image/png"
+    }
+  ],
+  "start_url": "/konomi/"
 }

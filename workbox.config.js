@@ -1,7 +1,7 @@
 module.exports = {
   globDirectory: 'docs/',
   globPatterns: [
-    '**\/*.{js,css,html}',
+    '**\/*.{js,css,html,png}',
     '**\/dl-manifest\/*'
   ],
   swDest: 'docs/sw.js',
