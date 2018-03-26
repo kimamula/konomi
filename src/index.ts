@@ -60,7 +60,9 @@ import { CheckpointLoader } from 'deeplearn';
               context.beginPath();
               context.rect(x, y, width, height);
               context.stroke();
-              context.fillText(`${score} / 100`, x + 5, y + 29);
+              context.textAlign = 'right';
+              context.textBaseline = 'bottom';
+              context.fillText(`${score} / 100`, x + width - 5, y + height - 5);
             }
             if (framesSinceLastDetection < intervalFrames) {
               return;
