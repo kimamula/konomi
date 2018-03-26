@@ -77,7 +77,7 @@
     <script>
     if ('serviceWorker' in navigator && location.pathname === '/konomi/') {
         window.addEventListener('load', function () {
-            navigator.serviceWorker.register('/konomi/sw.js?' + Date.now(), { scope: '/konomi/' });
+            navigator.serviceWorker.register('/konomi/sw.js', { scope: '/konomi/' });
         });
     }
     </script>
