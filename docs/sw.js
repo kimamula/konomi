@@ -25,7 +25,7 @@ workbox.skipWaiting();
 self.__precacheManifest = [
   {
     "url": "6ca0258f5e847422f2ddc9b8d077d6c0.js",
-    "revision": "6c81d6de188c956c53fd0660c55d5d2d"
+    "revision": "a83f10766f812030a683bc6e269758fd"
   },
   {
     "url": "index.html",
