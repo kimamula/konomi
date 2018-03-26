@@ -57,7 +57,7 @@ function writeFaceToCanvas(element: HTMLImageElement | HTMLCanvasElement | HTMLV
     y += (height - width) / 2;
     height = width;
 
-    // 2. if the mouth goes out of the area, the area is too small, therefore x 1.8 both width and height
+    // 2. if the mouth goes out of the area, the area is too small, therefore x 1.6 both width and height
     if (mouth && mouth.location.y > y + height) {
       x -= 0.3 * width;
       y -= 0.3 * height;
