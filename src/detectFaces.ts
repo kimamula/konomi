@@ -1,6 +1,6 @@
-const captureSize = 224;
+export const captureSize = 224;
 
-export function detectFacesDataURL(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): Promise<string[]> {
+export function detectFacesDataURL(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, _writeFaceToCanvas = writeFaceToCanvas, _captureSize = captureSize): Promise<string[]> {
   const fd = new FaceDetector();
   const rotateUnit = 5 * Math.PI/180;
   const sizeAfterRotation = Math.pow(Math.pow(element.width, 2) + Math.pow(element.height, 2), 0.5);
@@ -26,22 +26,22 @@ export function detectFacesDataURL(element: HTMLImageElement | HTMLCanvasElement
       { faces: [] } as { rotationCanvas?: HTMLCanvasElement; faces: Face[]; }
     ))
     .then(({ rotationCanvas, faces }) => rotationCanvas
-      ? Promise.all(faces.map(face => writeFaceToCanvas(rotationCanvas, face).canvas.toDataURL()))
+      ? Promise.all(faces.map(face => _writeFaceToCanvas(rotationCanvas, face, _captureSize).canvas.toDataURL()))
       : []
     );
 }
 
-export function detectFacesImageData(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): Promise<(Face & { imageData: ImageData; usedBoundingBox: Face['boundingBox']; })[]> {
+export function detectFacesImageData(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, _captureSize = captureSize): Promise<(Face & { imageData: ImageData; usedBoundingBox: Face['boundingBox']; })[]> {
   const fd = new FaceDetector();
 
   return fd.detect(element)
     .then(faces => faces.map(face => {
-      const { ctx, usedBoundingBox } = writeFaceToCanvas(element, face);
-      return { boundingBox: face.boundingBox, landmarks: face.landmarks, imageData: ctx.getImageData(0, 0, captureSize, captureSize), usedBoundingBox };
+      const { ctx, usedBoundingBox } = writeFaceToCanvas(element, face, _captureSize);
+      return { boundingBox: face.boundingBox, landmarks: face.landmarks, imageData: ctx.getImageData(0, 0, _captureSize, _captureSize), usedBoundingBox };
     }));
 }
 
-function writeFaceToCanvas(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, { boundingBox, landmarks }: Face): { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D; usedBoundingBox: Face['boundingBox']; } {
+function writeFaceToCanvas(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, { boundingBox, landmarks }: Face, captureSize: number): { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D; usedBoundingBox: Face['boundingBox']; } {
   let { x, y, width, height } = boundingBox;
   const [eye1, eye2] = landmarks.filter(({ type }) => type === 'eye');
   const [mouth] = landmarks.filter(({ type }) => type === 'mouth');
