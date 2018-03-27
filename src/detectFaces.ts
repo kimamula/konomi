@@ -1,6 +1,6 @@
 export const captureSize = 224;
 
-export function detectFacesDataURL(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, _writeFaceToCanvas = writeFaceToCanvas, _captureSize = captureSize): Promise<string[]> {
+export async function detectFacesDataURL(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, _writeFaceToCanvas = writeFaceToCanvas, _captureSize = captureSize): Promise<string[]> {
   const fd = new FaceDetector();
   const rotateUnit = 5 * Math.PI/180;
   const sizeAfterRotation = Math.pow(Math.pow(element.width, 2) + Math.pow(element.height, 2), 0.5);
@@ -31,12 +31,12 @@ export function detectFacesDataURL(element: HTMLImageElement | HTMLCanvasElement
     );
 }
 
-export function detectFacesImageData(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, _captureSize = captureSize): Promise<(Face & { imageData: ImageData; usedBoundingBox: Face['boundingBox']; })[]> {
+export async function detectFacesImageData(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, _writeFaceToCanvas = writeFaceToCanvas, _captureSize = captureSize): Promise<(Face & { imageData: ImageData; usedBoundingBox: Face['boundingBox']; })[]> {
   const fd = new FaceDetector();
 
   return fd.detect(element)
     .then(faces => faces.map(face => {
-      const { ctx, usedBoundingBox } = writeFaceToCanvas(element, face, _captureSize);
+      const { ctx, usedBoundingBox } = _writeFaceToCanvas(element, face, _captureSize);
       return { boundingBox: face.boundingBox, landmarks: face.landmarks, imageData: ctx.getImageData(0, 0, _captureSize, _captureSize), usedBoundingBox };
     }));
 }

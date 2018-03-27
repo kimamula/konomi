@@ -18,10 +18,12 @@
   "homepage": "https://github.com/kimamula/konomi#readme",
   "dependencies": {
     "@types/node": "^9.4.7",
+    "@types/selenium-webdriver": "^3.0.8",
     "@types/sharp": "^0.17.7",
     "deeplearn": "^0.5.1",
     "deeplearn-gl": "^4.0.7",
     "parcel-bundler": "^1.6.2",
+    "selenium-webdriver": "^3.6.0",
     "sharp": "^0.20.1",
     "tslib": "^1.9.0",
     "typescript": "^2.7.2",
