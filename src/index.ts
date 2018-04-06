@@ -1,6 +1,5 @@
 import { detectFacesImageData } from './detectFaces';
-import { DeeplearnModel } from './DeeplearnModel';
-import { CheckpointLoader } from 'deeplearn';
+import { TfjsModel } from './TfjsModel';
 
 const canvas = document.querySelector('canvas')!;
 const context = canvas.getContext('2d')!;
@@ -16,7 +15,7 @@ function orientationAPI(): Promise<{ lock(orientation: string): Promise<void>; u
 }
 
 if ('FaceDetector' in window) {
-  const manifestFilePath = `${location.pathname === '/konomi/' ? '/konomi' : '/dist'}/dl-manifest`;
+  const manifestFilePath = `${location.pathname.startsWith('/konomi/') ? '/konomi' : '/dist'}/tfjs`;
   Promise
     .all([
       navigator.mediaDevices.enumerateDevices()
@@ -26,7 +25,7 @@ if ('FaceDetector' in window) {
           : navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: videoInputDevices[0] } } })
             .then(mediaStream => ({ mediaStream, videoInputDevices }))
       ),
-      DeeplearnModel.getInstance(new CheckpointLoader(manifestFilePath)),
+      TfjsModel.getInstance(manifestFilePath),
     ])
     .then(([mediaDevicesInfo, deeplearnModel]) => {
       const { mediaStream, videoInputDevices } = mediaDevicesInfo;
@@ -94,7 +93,7 @@ if ('FaceDetector' in window) {
             return;
           }
           isFlipping = true;
-          video.srcObject!.getTracks().forEach(track => track.stop());
+          (video.srcObject as MediaStream).getTracks().forEach(track => track.stop());
           currentDeviceIndex = (currentDeviceIndex + 1) % videoInputDevicesLength;
           await navigator.mediaDevices
             .getUserMedia({ video: { deviceId: { exact: videoInputDevices[currentDeviceIndex] } } })

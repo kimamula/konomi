@@ -6,3 +6,4 @@ dist/**
 !dist/.gitkeep
 src/**/*.js
 misc/explore
+misc/**/*.js

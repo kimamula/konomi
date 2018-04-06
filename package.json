@@ -7,8 +7,9 @@
     "url": "git+https://github.com/kimamula/konomi.git"
   },
   "scripts": {
-    "build": "cp -r data/dl-manifest docs && parcel build src/index.html --out-dir docs --public-url /konomi && workbox generateSW workbox.config.js",
-    "start": "cp -r data/dl-manifest dist && parcel src/index.html"
+    "build": "cp -r data/tfjs docs && parcel build src/index.html --out-dir docs --public-url /konomi && workbox generateSW workbox.config.js",
+    "validate": "cp -r data/images_png dist && parcel build misc/predict.ts && tsc && node misc/validate",
+    "start": "cp -r data/tfjs dist && parcel src/index.html"
   },
   "author": "kimamula",
   "license": "MIT",
@@ -17,16 +18,18 @@
   },
   "homepage": "https://github.com/kimamula/konomi#readme",
   "dependencies": {
+    "@tensorflow/tfjs-converter": "^0.1.0",
+    "@tensorflow/tfjs-core": "^0.6.0",
     "@types/node": "^9.4.7",
+    "@types/puppeteer": "^1.2.0",
     "@types/selenium-webdriver": "^3.0.8",
     "@types/sharp": "^0.17.7",
-    "deeplearn": "^0.5.1",
-    "deeplearn-gl": "^4.0.7",
     "parcel-bundler": "^1.6.2",
+    "puppeteer": "^1.2.0",
     "selenium-webdriver": "^3.6.0",
     "sharp": "^0.20.1",
     "tslib": "^1.9.0",
-    "typescript": "^2.7.2",
+    "typescript": "^2.8.1",
     "workbox-cli": "^3.0.0"
   }
 }

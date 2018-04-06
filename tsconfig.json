@@ -13,9 +13,10 @@
   "compileOnSave": true,
   "include": [
     "src/**/*",
-    "ml/**/*"
+    "misc/**/*"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "misc/predict.ts"
   ]
 }

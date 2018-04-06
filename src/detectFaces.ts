@@ -41,7 +41,7 @@ export async function detectFacesImageData(element: HTMLImageElement | HTMLCanva
     }));
 }
 
-function writeFaceToCanvas(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, { boundingBox, landmarks }: Face, captureSize: number): { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D; usedBoundingBox: Face['boundingBox']; } {
+export function writeFaceToCanvas(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, { boundingBox, landmarks }: Face, captureSize: number): { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D; usedBoundingBox: Face['boundingBox']; } {
   let { x, y, width, height } = boundingBox;
   const [eye1, eye2] = landmarks.filter(({ type }) => type === 'eye');
   const [mouth] = landmarks.filter(({ type }) => type === 'mouth');
