@@ -7,7 +7,7 @@ const headless = process.argv[3] === 'true';
 
 puppeteer.launch({ headless }).then(async browser => {
   const page = await browser.newPage();
-  await Promise.all(['_', 'error', 'like'].map(async (category, i) => predict(page, category, i)));
+  await Promise.all(['_', 'error', 'like', 'other'].map(async (category, i) => predict(page, category, i)));
   return browser.close();
 }).catch(e => console.error(e));
 
