@@ -7,9 +7,9 @@
     "url": "git+https://github.com/kimamula/konomi.git"
   },
   "scripts": {
-    "build": "cp -r data/tfjs docs && parcel build src/index.html --out-dir docs --public-url /konomi && workbox generateSW workbox.config.js",
+    "build": "cp -r data/tfjs docs && cp -r data/opencv docs && parcel build src/index.html --out-dir docs --public-url /konomi && workbox generateSW workbox.config.js",
     "validate": "cp -r data/images_png dist && parcel build misc/predict.ts && tsc && node misc/validate",
-    "start": "cp -r data/tfjs dist && parcel src/index.html"
+    "start": "cp -r data/tfjs dist && cp -r data/opencv dist && parcel src/index.html"
   },
   "author": "kimamula",
   "license": "MIT",

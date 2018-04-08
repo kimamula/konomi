@@ -1,8 +1,10 @@
 node_modules
-data
+data/*
+!data/opencv/
+!data/tfjs/
 .python-version
 .cache
-dist/**
+dist/*
 !dist/.gitkeep
 src/**/*.js
 misc/explore
