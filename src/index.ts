@@ -4,14 +4,9 @@ import { TfjsModel } from './TfjsModel';
 const canvas = document.querySelector('canvas')!;
 const context = canvas.getContext('2d')!;
 const message = document.querySelector('.message')!;
-const messageRecommendsFaceDetector = document.querySelector('.message-recommends-FaceDetector')!;
 const mainContents = document.querySelector('.main-contents')!;
 const flipCamera = document.querySelector('.flip-camera')!;
 const forceLandscape = document.querySelector('.force-landscape')!;
-
-if (!('FaceDetector' in window)) {
-  messageRecommendsFaceDetector.classList.remove('hidden');
-}
 
 function orientationAPI(): Promise<{ lock(orientation: string): Promise<void>; unlock(): void; }> {
   return (typeof window.orientation !== 'undefined') && (screen as any).orientation && (screen as any).orientation.lock
@@ -44,7 +39,7 @@ Promise
       const intervalFrames = 60;
       let framesSinceLastDetection = 0;
       let detectedFaces: { usedBoundingBox: Face['boundingBox']; score: string; color: string; }[] = [];
-      (async function renderLoop() {
+      (function renderLoop() {
         if (video.srcObject !== mediaStream) {
           return;
         }
@@ -54,6 +49,24 @@ Promise
         canvas.height = video.videoHeight;
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, canvas.width, canvas.height);
+        if (framesSinceLastDetection >= intervalFrames) {
+          framesSinceLastDetection = 0;
+          detectFacesImageData(canvas)
+            .then(facesImageData => Promise
+              .all(facesImageData.map(({ usedBoundingBox, imageData }) => deeplearnModel
+                .predict(imageData)
+                .then(scores => {
+                  const score = scores[2];
+                  let hexadecimal = (score === 0 ? 255 : Math.floor((1 - score) * 256)).toString(16);
+                  hexadecimal = hexadecimal.length === 1 ? `0${hexadecimal}` : hexadecimal;
+                  const color = `#ff${hexadecimal}00`;
+                  return { usedBoundingBox, score: (score * 100).toFixed(2), color };
+                })
+              ))
+              .then(faces => detectedFaces = faces)
+            )
+            .catch(err => console.error(err) || []);
+        }
         for (const { usedBoundingBox, score, color } of detectedFaces) {
           const { x, y, width, height } = usedBoundingBox;
           context.strokeStyle = color;
@@ -67,25 +80,6 @@ Promise
           context.textBaseline = 'bottom';
           context.fillText(`${score} / 100`, x + width - 5, y + height - 5);
         }
-        if (framesSinceLastDetection < intervalFrames) {
-          return;
-        }
-        framesSinceLastDetection = 0;
-        detectFacesImageData(video)
-          .then(facesImageData => Promise
-            .all(facesImageData.map(({ usedBoundingBox, imageData }) => deeplearnModel
-              .predict(imageData)
-              .then(scores => {
-                const score = scores[2];
-                let hexadecimal = (score === 0 ? 255 : Math.floor((1 - score) * 256)).toString(16);
-                hexadecimal = hexadecimal.length === 1 ? `0${hexadecimal}` : hexadecimal;
-                const color = `#ff${hexadecimal}00`;
-                return { usedBoundingBox, score: (score * 100).toFixed(2), color };
-              })
-            ))
-            .then(faces => detectedFaces = faces)
-          )
-          .catch(err => console.error(err) || []);
       })();
     };
 

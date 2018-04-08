@@ -7,5 +7,6 @@ data/*
 dist/*
 !dist/.gitkeep
 src/**/*.js
+!scr/opencv/*.js
 misc/explore
 misc/**/*.js

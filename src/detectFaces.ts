@@ -89,6 +89,7 @@ function detectFaceWithFaceDetector(): (element: HTMLImageElement | HTMLCanvasEl
   return (element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement) => fd.detect(element);
 }
 
+let openCVWorker: Worker;
 /**
  * Call this function beforehand when you are trying to detect faces under environment which is not guaranteed to implement FaceDetector
  * @returns {Promise<void>}
@@ -98,75 +99,33 @@ export async function prepareToDetectFaces(): Promise<void> {
     return;
   }
   return new Promise<void>((resolve, reject) => {
-    const script = document.createElement('script');
-    script.setAttribute('async', '');
-    script.setAttribute('type', 'text/javascript');
-    script.addEventListener('load', () => {
-      const request = new XMLHttpRequest();
-      const url = `${location.pathname.startsWith('/konomi/') ? '/konomi' : '/dist'}/opencv/haarcascade_frontalface_default.xml`;
-      request.open('GET', url, true);
-      request.responseType = 'arraybuffer';
-      request.onload = function() {
-        if (request.readyState === 4) {
-          if (request.status === 200) {
-            let data = new Uint8Array(request.response);
-            window['cv'].FS_createDataFile('/', 'haarcascade_frontalface_default.xml', data, true, false, false);
-            resolve();
-          } else {
-            reject(new Error(`Failed to load ${url}. status: ${request.status}`));
-          }
-        }
-      };
-      request.send();
-    });
-    script.addEventListener('error', ({ error }) => reject(error));
-    script.src = `${location.pathname.startsWith('/konomi/') ? '/konomi' : '/dist'}/opencv/opencv.js`;
-    const node = document.getElementsByTagName('script')[0];
-    node!.parentNode!.insertBefore(script, node);
+    openCVWorker = new Worker('./opencv/worker.js');
+    openCVWorker.onmessage = ({ data }) => {
+      if (data.type === 'load') {
+        return data.error ? reject(data.error) : resolve();
+      }
+    }
   });
 }
 
 function detectFaceWithOpenCV(): (element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement) => Promise<Face[]> {
-  const cache = new WeakMap<HTMLElement, any>();
-  const capCache = new WeakMap<HTMLVideoElement, any>();
-  let classifier: any;
-  let faces: any;
   return async (element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement) => {
-    const cv = window['cv'];
-    let srcMat = cache.get(element);
-    if (!srcMat) {
-      if (element instanceof HTMLImageElement) {
-        srcMat = cv.imread(element);
-      } else if (element instanceof HTMLVideoElement) {
-        if (!element.height || !element.width) {
-          element.height = element.videoHeight;
-          element.width = element.videoWidth;
-        }
-        srcMat = new cv.Mat(element.height, element.width, cv.CV_8UC4);
-        capCache.set(element, new cv.VideoCapture(element));
-      } else {
-        srcMat = new cv.Mat(element.height, element.width, cv.CV_8UC4);
+    if (!(element instanceof HTMLCanvasElement)) {
+      return Promise.reject(new Error('OpenCV implementation only accepts HTMLCanvasElement'));
+    }
+    if (!openCVWorker) {
+      return Promise.reject(new Error('prepareToDetectFaces has to be called beforehand to enable OpenCV fallback'));
+    }
+    openCVWorker.postMessage({ type: 'detectFaces', img: element.getContext('2d')!.getImageData(0, 0, element.width, element.height) });
+    return new Promise<Face[]>(resolve => openCVWorker.onmessage = ({ data }) => {
+      switch (data.type) {
+        case 'detectFaces':
+          return resolve(data.faces.map(({ x, y, width, height }: Face['boundingBox']) => ({
+            // adjust differences of face area detected by FaceDetector and OpenCV
+            boundingBox: { x, y: y + height * 0.1, width, height },
+            landmarks: [],
+          })));
       }
-      cache.set(element, srcMat);
-    }
-    if (element instanceof HTMLVideoElement) {
-      capCache.get(element).read(srcMat);
-    }
-    if (!classifier) {
-      classifier = new cv.CascadeClassifier();
-      classifier.load('haarcascade_frontalface_default.xml');
-    }
-    if (!faces) {
-      faces = new cv.RectVector();
-    }
-    classifier.detectMultiScale(srcMat, faces);
-    const result: Face[] = [];
-    for (let i = 0; i < faces.size(); ++i) {
-      let { x, y, width, height } = faces.get(i) as Face['boundingBox'];
-      // adjust differences of face area detected by FaceDetector and OpenCV
-      y += height * 0.1;
-      result.push({ boundingBox: { x, y, width, height }, landmarks: [] });
-    }
-    return result;
+    });
   };
 }

@@ -28,12 +28,16 @@ self.__precacheManifest = [
     "revision": "561dd548067fbaea3278683f9128b8a0"
   },
   {
+    "url": "34342e9fed88a6fe37e38cddc9af7fb3.js",
+    "revision": "90215daaa67425f09e55e09e65a7f73b"
+  },
+  {
     "url": "6ca0258f5e847422f2ddc9b8d077d6c0.js",
-    "revision": "9a7f551dbe1a44be76106709b125eff0"
+    "revision": "72a18f4baf50afd12ab0122a9405c852"
   },
   {
     "url": "index.html",
-    "revision": "c8d5ed09b6ab438058ac63584d6de721"
+    "revision": "d0bb08e33202087ac70824601eb08bba"
   },
   {
     "url": "opencv/opencv.js",

@@ -30,6 +30,10 @@ data/
             like001.png
             like002.png
             ...
+        other/   -> face images which I do not want to include as candidates, such as faces on illustrations
+            like001.png
+            like002.png
+            ...
 ```
 
 3. Convert images to `.jpg` as the following step does not accept `.png`.
@@ -47,8 +51,8 @@ $ python -m scripts.retrain \
   --output_labels="${DATA_DIR}"/retrained_labels.txt \
   --architecture="${ARCHITECTURE}" \
   --image_dir="${DATA_DIR}"/images \
-  --how_many_training_steps=1000 \
-  --learning_rate=0.001 \
+  --how_many_training_steps=2000 \
+  --learning_rate=0.0005 \
   --testing_percentage=20 \
   --validation_percentage=20 \
   --flip_left_right \
@@ -58,3 +62,10 @@ $ python -m scripts.retrain \
 5. Convert the resulting model file (`retrained_graph.pb`) to the format that can be used by deeplearn.js.
     - Unfortunately, this functionality is not officially provided by deeplearn.js.
     - Thus I used a [script](https://github.com/kimamula/deeplearnjs/commit/c2d74413122991e5cf82c6cb45b4ebab69976f4f) I wrote myself.
+
+# Supported browsers
+
+This app supports browsers which meet either of the following conditions.
+
+- [Browsers on which FaceDetector is available](https://www.chromestatus.com/feature/4757990523535360)
+- Browsers which support [WASM](https://caniuse.com/#search=webassembly) and [ServiceWorker](https://caniuse.com/#search=serviceworkers)
