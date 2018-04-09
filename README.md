@@ -3,14 +3,16 @@ Score human faces based on my personal preference.
 
 Live demo is running at https://kimamula.github.io/konomi/
 
-# Run locally
+## Run locally
+
+You have to enable [Shape Detection API](https://www.chromestatus.com/feature/4757990523535360) to run this app locally.
 
 ```sh
 $ npm isntall
 $ npm start
 ```
 
-# How did I execute learning
+## How did I execute learning
 
 1. Collect face images from Web by using [`FaceDetector`](https://wicg.github.io/shape-detection-api/#face-detection-api).
 1. Classify the collected images and put them as follows.
@@ -31,8 +33,8 @@ data/
             like002.png
             ...
         other/   -> face images which I do not want to include as candidates, such as faces on illustrations
-            like001.png
-            like002.png
+            other001.png
+            other002.png
             ...
 ```
 
@@ -59,13 +61,26 @@ $ python -m scripts.retrain \
   --random_brightness=50
 ```
 
-5. Convert the resulting model file (`retrained_graph.pb`) to the format that can be used by deeplearn.js.
-    - Unfortunately, this functionality is not officially provided by deeplearn.js.
-    - Thus I used a [script](https://github.com/kimamula/deeplearnjs/commit/c2d74413122991e5cf82c6cb45b4ebab69976f4f) I wrote myself.
+5. Convert the resulting model file (`retrained_graph.pb`) to SavedModel format using [create_saved_model.py](misc/create_saved_model.py).
 
-# Supported browsers
+```sh
+$ python -m misc.create_saved_model
+```
+
+6. Convert the SavedModel with [tensorflowjs_converter](https://github.com/tensorflow/tfjs-converter/)
+
+```sh
+$ tensorflowjs_converter \
+  --input_format=tf_saved_model \
+  --saved_model_tags=serve \
+  --output_node_names="final_result" \
+  ./data/saved-model \
+  ./data/tfjs
+```
+
+## Supported browsers
 
 This app supports browsers which meet either of the following conditions.
 
-- [Browsers on which FaceDetector is available](https://www.chromestatus.com/feature/4757990523535360)
-- Browsers which support [WASM](https://caniuse.com/#search=webassembly) and [ServiceWorker](https://caniuse.com/#search=serviceworkers)
+- Browsers which support [Shape Detection API](https://www.chromestatus.com/feature/4757990523535360)
+- Browsers which support [WASM](https://caniuse.com/#search=webassembly) and [Web Workers](https://caniuse.com/#search=webworkers)
