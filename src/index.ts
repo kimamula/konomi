@@ -7,6 +7,7 @@ const message = document.querySelector('.message')!;
 const mainContents = document.querySelector('.main-contents')!;
 const flipCamera = document.querySelector('.flip-camera')!;
 const forceLandscape = document.querySelector('.force-landscape')!;
+const video = document.querySelector('video')!;
 
 function orientationAPI(): Promise<{ lock(orientation: string): Promise<void>; unlock(): void; }> {
   return (typeof window.orientation !== 'undefined') && (screen as any).orientation && (screen as any).orientation.lock
@@ -32,7 +33,6 @@ Promise
     message.classList.add('hidden');
     mainContents.classList.remove('hidden');
 
-    const video = document.createElement('video');
     video.srcObject = mediaStream;
     video.onloadedmetadata = () => {
       const mediaStream = video.srcObject;
@@ -56,7 +56,7 @@ Promise
               .all(facesImageData.map(({ usedBoundingBox, imageData }) => deeplearnModel
                 .predict(imageData)
                 .then(scores => {
-                  const score = scores[2];
+                  const score = Math.max(scores[2], 0);
                   let hexadecimal = (score === 0 ? 255 : Math.floor((1 - score) * 256)).toString(16);
                   hexadecimal = hexadecimal.length === 1 ? `0${hexadecimal}` : hexadecimal;
                   const color = `#ff${hexadecimal}00`;

@@ -33,11 +33,11 @@ self.__precacheManifest = [
   },
   {
     "url": "6ca0258f5e847422f2ddc9b8d077d6c0.js",
-    "revision": "72a18f4baf50afd12ab0122a9405c852"
+    "revision": "b5fad26857b8a8631e99d33747df6b38"
   },
   {
     "url": "index.html",
-    "revision": "d0bb08e33202087ac70824601eb08bba"
+    "revision": "4855e36d47fcd5178c601b0e3912dbfb"
   },
   {
     "url": "opencv/opencv.js",
