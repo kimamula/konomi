@@ -4,15 +4,10 @@ import { TfjsModel } from './TfjsModel';
 const canvas = document.querySelector('canvas')!;
 const context = canvas.getContext('2d')!;
 const message = document.querySelector('.message')!;
-const messageRecommendsFaceDetector = document.querySelector('.message-recommends-FaceDetector')!;
 const mainContents = document.querySelector('.main-contents')!;
 const flipCamera = document.querySelector('.flip-camera')!;
 const forceLandscape = document.querySelector('.force-landscape')!;
 const video = document.querySelector('video')!;
-
-if (!('FaceDetector' in window)) {
-  messageRecommendsFaceDetector.classList.remove('hidden');
-}
 
 function orientationAPI(): Promise<{ lock(orientation: string): Promise<void>; unlock(): void; }> {
   return (typeof window.orientation !== 'undefined') && (screen as any).orientation && (screen as any).orientation.lock
@@ -43,15 +38,12 @@ Promise
       const mediaStream = video.srcObject;
       const intervalFrames = 30;
       let framesSinceLastDetection = 0;
-      let detectedFaces: { usedBoundingBox: Face['boundingBox']; imageData: ImageData; score?: string; color?: string; }[] = [];
+      let detectedFaces: { usedBoundingBox: Face['boundingBox']; imageData: ImageData; score: string; color: string; }[] = [];
       (async function renderLoop() {
         if (video.srcObject !== mediaStream) {
           return;
         }
         requestAnimationFrame(renderLoop);
-        if (video.paused) {
-          return;
-        }
         framesSinceLastDetection += 1;
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -60,29 +52,14 @@ Promise
         if (framesSinceLastDetection >= intervalFrames) {
           framesSinceLastDetection = 0;
           detectFacesImageData(canvas, detectFace)
-            .then<{ usedBoundingBox: Face['boundingBox']; imageData: ImageData; score?: string; color?: string; }[]>(facesImageData => 'FaceDetector' in window
-              ? Promise.all(facesImageData.map(calcScoreAndColor))
-              : facesImageData
+            .then(facesImageData =>
+              Promise.all(facesImageData.map(calcScoreAndColor))
             )
             .then(_detectedFaces => detectedFaces = _detectedFaces)
             .catch(err => console.error(err));
         }
         markDetectedFace();
       })();
-
-      if (!('FaceDetector' in window)) {
-        canvas.addEventListener('click', async () => {
-          if (video.paused) {
-            video.play();
-          } else {
-            video.pause();
-            context.clearRect(0, 0, canvas.width, canvas.height);
-            context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, canvas.width, canvas.height);
-            detectedFaces = await Promise.all(detectedFaces.map(calcScoreAndColor));
-            markDetectedFace();
-          }
-        });
-      }
 
       function calcScoreAndColor(
         { usedBoundingBox, imageData }: { usedBoundingBox: Face['boundingBox']; imageData: ImageData; }
@@ -99,7 +76,7 @@ Promise
       }
 
       function markDetectedFace() {
-        for (const { usedBoundingBox, score, color = '#ffff00' } of detectedFaces) {
+        for (const { usedBoundingBox, score, color } of detectedFaces) {
           const { x, y, width, height } = usedBoundingBox;
           context.strokeStyle = color;
           context.fillStyle = color;
@@ -110,7 +87,7 @@ Promise
           context.stroke();
           context.textAlign = 'right';
           context.textBaseline = 'bottom';
-          context.fillText(score ? `${score} / 100` : 'Click!!', x + width - 5, y + height - 5);
+          context.fillText(`${score} / 100`, x + width - 5, y + height - 5);
         }
       }
     };
