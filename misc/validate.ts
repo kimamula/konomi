@@ -2,8 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import puppeteer, { Page } from 'puppeteer';
 
-const originalSize = process.argv[2] && Number(process.argv[2]);
-const headless = process.argv[3] === 'true';
+const headless = process.argv[2] === 'true';
 
 puppeteer.launch({ headless }).then(async browser => {
   const page = await browser.newPage();
@@ -29,7 +28,7 @@ function predict(page: Page, category: string, categoryIndex: number): Promise<a
           'http://localhost:1234/dist/tfjs'
         );
       }
-      const scores = await page.evaluate((src, originalSize) => (window['predict'] as Function)(src, originalSize), src, originalSize);
+      const scores = await page.evaluate((src) => (window['predict'] as Function)(src), src);
       if (scores[categoryIndex] > scores[(categoryIndex + 1) % 3] && scores[categoryIndex] > scores[(categoryIndex + 2) % 3]) {
         correct += 1;
       }

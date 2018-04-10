@@ -5,7 +5,7 @@ async function loadModel(manifestFilePath: string): Promise<void> {
   window['tfjsModel'] = await TfjsModel.getInstance(manifestFilePath);
 }
 
-async function predict(src?: string, originalSize?: number): Promise<number[]> {
+async function predict(src?: string): Promise<number[]> {
   const tfjsModel = window['tfjsModel'] as TfjsModel;
   let img = document.querySelector('img')!;
   if (src && img.src !== src) {
@@ -15,8 +15,8 @@ async function predict(src?: string, originalSize?: number): Promise<number[]> {
     img.src = src;
   }
   const imageData = img.complete
-    ? getImageData(img, originalSize)
-    : await new Promise<ImageData>(resolve => img.onload = () => resolve(getImageData(img, originalSize)));
+    ? getImageData(img)
+    : await new Promise<ImageData>(resolve => img.onload = () => resolve(getImageData(img)));
   return tfjsModel.predict(imageData);
 }
 
@@ -36,12 +36,13 @@ async function detectAndPredict(src?: string): Promise<number[][]> {
   return Promise.all(imageDataList.map(imageData => tfjsModel.predict(imageData)));
 }
 
-function getImageData(img: HTMLImageElement, originalSize = 224): ImageData {
+function getImageData(img: HTMLImageElement): ImageData {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d')!;
   canvas.width = 224;
   canvas.height = 224;
-  ctx.drawImage(img, 0,0, originalSize, originalSize, 0, 0, 224, 224);
+  console.log(img.width, img.height);
+  ctx.drawImage(img, 0,0, img.width, img.height, 0, 0, 224, 224);
   return ctx.getImageData(0, 0, 224, 224);
 }
 
