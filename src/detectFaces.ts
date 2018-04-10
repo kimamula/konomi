@@ -87,8 +87,7 @@ export function writeFaceToCanvas(element: HTMLImageElement | HTMLCanvasElement 
 export type DetectFace = (element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement) => Promise<Face[]>;
 
 export function detectFaceWithFaceDetector(): DetectFace {
-  const fd = new FaceDetector();
-  return (element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement) => fd.detect(element);
+  return (element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement) => new FaceDetector().detect(element);
 }
 
 export function getFaceDetector(): Promise<DetectFace> {
