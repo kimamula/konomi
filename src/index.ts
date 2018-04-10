@@ -1,5 +1,6 @@
 import { detectFacesImageData, getFaceDetector } from './detectFaces';
 import { TfjsModel } from './TfjsModel';
+import screenfull from 'screenfull';
 
 const canvas = document.querySelector('canvas')!;
 const context = canvas.getContext('2d')!;
@@ -115,19 +116,19 @@ Promise
     } else {
       flipCamera.classList.add('hidden');
     }
-    orientationAPI().then(
-      api => forceLandscape.addEventListener('click', e => {
+    orientationAPI()
+      .then<any>(
+      api => screenfull.enabled ? forceLandscape.addEventListener('click', e => {
         e.stopPropagation();
-        if (document.fullscreenElement) {
-          document.exitFullscreen();
+        if (screenfull.isFullscreen) {
+          screenfull.exit();
           api.unlock();
         } else {
-          mainContents.requestFullscreen();
+          screenfull.request(mainContents);
           api.lock('landscape').catch(err => console.error(err));
         }
-      }),
-      () => forceLandscape.classList.add('hidden')
-    );
+      }) : Promise.reject(null))
+      .catch(() => forceLandscape.classList.add('hidden'));
   })
   .catch(e => {
     console.error(e);
