@@ -4,10 +4,15 @@ import { TfjsModel } from './TfjsModel';
 const canvas = document.querySelector('canvas')!;
 const context = canvas.getContext('2d')!;
 const message = document.querySelector('.message')!;
+const messageRecommendsFaceDetector = document.querySelector('.message-recommends-FaceDetector')!;
 const mainContents = document.querySelector('.main-contents')!;
 const flipCamera = document.querySelector('.flip-camera')!;
 const forceLandscape = document.querySelector('.force-landscape')!;
 const video = document.querySelector('video')!;
+
+if (!('FaceDetector' in window)) {
+  messageRecommendsFaceDetector.classList.remove('hidden');
+}
 
 function orientationAPI(): Promise<{ lock(orientation: string): Promise<void>; unlock(): void; }> {
   return (typeof window.orientation !== 'undefined') && (screen as any).orientation && (screen as any).orientation.lock
@@ -28,7 +33,7 @@ Promise
     TfjsModel.getInstance(manifestFilePath),
     prepareToDetectFaces(),
   ])
-  .then(([mediaDevicesInfo, deeplearnModel]) => {
+  .then(([mediaDevicesInfo, tfjsModel]) => {
     const { mediaStream, videoInputDevices } = mediaDevicesInfo;
     message.classList.add('hidden');
     mainContents.classList.remove('hidden');
@@ -36,14 +41,17 @@ Promise
     video.srcObject = mediaStream;
     video.onloadedmetadata = () => {
       const mediaStream = video.srcObject;
-      const intervalFrames = 60;
+      const intervalFrames = 30;
       let framesSinceLastDetection = 0;
-      let detectedFaces: { usedBoundingBox: Face['boundingBox']; score: string; color: string; }[] = [];
-      (function renderLoop() {
+      let detectedFaces: { usedBoundingBox: Face['boundingBox']; imageData: ImageData; score?: string; color?: string; }[] = [];
+      (async function renderLoop() {
         if (video.srcObject !== mediaStream) {
           return;
         }
         requestAnimationFrame(renderLoop);
+        if (video.paused) {
+          return;
+        }
         framesSinceLastDetection += 1;
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -52,22 +60,46 @@ Promise
         if (framesSinceLastDetection >= intervalFrames) {
           framesSinceLastDetection = 0;
           detectFacesImageData(canvas)
-            .then(facesImageData => Promise
-              .all(facesImageData.map(({ usedBoundingBox, imageData }) => deeplearnModel
-                .predict(imageData)
-                .then(scores => {
-                  const score = Math.max(scores[2], 0);
-                  let hexadecimal = (score === 0 ? 255 : Math.floor((1 - score) * 256)).toString(16);
-                  hexadecimal = hexadecimal.length === 1 ? `0${hexadecimal}` : hexadecimal;
-                  const color = `#ff${hexadecimal}00`;
-                  return { usedBoundingBox, score: (score * 100).toFixed(2), color };
-                })
-              ))
-              .then(faces => detectedFaces = faces)
+            .then<{ usedBoundingBox: Face['boundingBox']; imageData: ImageData; score?: string; color?: string; }[]>(facesImageData => 'FaceDetector' in window
+              ? Promise.all(facesImageData.map(calcScoreAndColor))
+              : facesImageData
             )
-            .catch(err => console.error(err) || []);
+            .then(_detectedFaces => detectedFaces = _detectedFaces)
+            .catch(err => console.error(err));
         }
-        for (const { usedBoundingBox, score, color } of detectedFaces) {
+        markDetectedFace();
+      })();
+
+      if (!('FaceDetector' in window)) {
+        canvas.addEventListener('click', async () => {
+          if (video.paused) {
+            video.play();
+          } else {
+            video.pause();
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, canvas.width, canvas.height);
+            detectedFaces = await Promise.all(detectedFaces.map(calcScoreAndColor));
+            markDetectedFace();
+          }
+        });
+      }
+
+      function calcScoreAndColor(
+        { usedBoundingBox, imageData }: { usedBoundingBox: Face['boundingBox']; imageData: ImageData; }
+      ): Promise<{ usedBoundingBox: Face['boundingBox']; imageData: ImageData; score: string; color: string; }> {
+        return tfjsModel
+          .predict(imageData)
+          .then(scores => {
+            const score = Math.max(scores[2], 0);
+            let hexadecimal = (score === 0 ? 255 : Math.floor((1 - score) * 256)).toString(16);
+            hexadecimal = hexadecimal.length === 1 ? `0${hexadecimal}` : hexadecimal;
+            const color = `#ff${hexadecimal}00`;
+            return { usedBoundingBox, imageData, score: (score * 100).toFixed(2), color };
+          });
+      }
+
+      function markDetectedFace() {
+        for (const { usedBoundingBox, score, color = '#ffff00' } of detectedFaces) {
           const { x, y, width, height } = usedBoundingBox;
           context.strokeStyle = color;
           context.fillStyle = color;
@@ -78,16 +110,17 @@ Promise
           context.stroke();
           context.textAlign = 'right';
           context.textBaseline = 'bottom';
-          context.fillText(`${score} / 100`, x + width - 5, y + height - 5);
+          context.fillText(score ? `${score} / 100` : 'Click!!', x + width - 5, y + height - 5);
         }
-      })();
+      }
     };
 
     const videoInputDevicesLength = videoInputDevices.length;
     if (videoInputDevicesLength > 1) {
       let isFlipping = false;
       let currentDeviceIndex = 0;
-      flipCamera.addEventListener('click', async () => {
+      flipCamera.addEventListener('click', async e => {
+        e.stopPropagation();
         if (isFlipping) {
           return;
         }
@@ -106,7 +139,8 @@ Promise
       flipCamera.classList.add('hidden');
     }
     orientationAPI().then(
-      api => forceLandscape.addEventListener('click', () => {
+      api => forceLandscape.addEventListener('click', e => {
+        e.stopPropagation();
         if (document.fullscreenElement) {
           document.exitFullscreen();
           api.unlock();
