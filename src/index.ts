@@ -1,4 +1,4 @@
-import { detectFacesImageData, prepareToDetectFaces } from './detectFaces';
+import { detectFacesImageData, getFaceDetector } from './detectFaces';
 import { TfjsModel } from './TfjsModel';
 
 const canvas = document.querySelector('canvas')!;
@@ -31,9 +31,9 @@ Promise
           .then(mediaStream => ({ mediaStream, videoInputDevices }))
     ),
     TfjsModel.getInstance(manifestFilePath),
-    prepareToDetectFaces(),
+    getFaceDetector(),
   ])
-  .then(([mediaDevicesInfo, tfjsModel]) => {
+  .then(([mediaDevicesInfo, tfjsModel, detectFace]) => {
     const { mediaStream, videoInputDevices } = mediaDevicesInfo;
     message.classList.add('hidden');
     mainContents.classList.remove('hidden');
@@ -59,7 +59,7 @@ Promise
         context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, canvas.width, canvas.height);
         if (framesSinceLastDetection >= intervalFrames) {
           framesSinceLastDetection = 0;
-          detectFacesImageData(canvas)
+          detectFacesImageData(canvas, detectFace)
             .then<{ usedBoundingBox: Face['boundingBox']; imageData: ImageData; score?: string; color?: string; }[]>(facesImageData => 'FaceDetector' in window
               ? Promise.all(facesImageData.map(calcScoreAndColor))
               : facesImageData

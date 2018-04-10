@@ -1,6 +1,8 @@
 export const captureSize = 224;
 
-export async function detectFacesDataURL(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, _writeFaceToCanvas = writeFaceToCanvas, _captureSize = captureSize): Promise<string[]> {
+export async function detectFacesDataURL(
+  element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, detectFace = detectFaceWithFaceDetector(), _writeFaceToCanvas = writeFaceToCanvas, _captureSize = captureSize
+): Promise<string[]> {
   const rotateUnit = 5 * Math.PI/180;
   const sizeAfterRotation = Math.pow(Math.pow(element.width, 2) + Math.pow(element.height, 2), 0.5);
 
@@ -30,7 +32,9 @@ export async function detectFacesDataURL(element: HTMLImageElement | HTMLCanvasE
     );
 }
 
-export async function detectFacesImageData(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, _writeFaceToCanvas = writeFaceToCanvas, _captureSize = captureSize): Promise<(Face & { imageData: ImageData; usedBoundingBox: Face['boundingBox']; })[]> {
+export async function detectFacesImageData(
+  element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, detectFace = detectFaceWithFaceDetector(), _writeFaceToCanvas = writeFaceToCanvas, _captureSize = captureSize
+): Promise<(Face & { imageData: ImageData; usedBoundingBox: Face['boundingBox']; })[]> {
   return detectFace(element)
     .then(faces => faces.map(face => {
       const { ctx, usedBoundingBox } = _writeFaceToCanvas(element, face, _captureSize);
@@ -80,52 +84,46 @@ export function writeFaceToCanvas(element: HTMLImageElement | HTMLCanvasElement 
   return { canvas, ctx, usedBoundingBox: { x, y, width, height } };
 }
 
-const detectFace: (element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement) => Promise<Face[]> = 'FaceDetector' in window
-  ? detectFaceWithFaceDetector()
-  : detectFaceWithOpenCV();
+export type DetectFace = (element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement) => Promise<Face[]>;
 
-function detectFaceWithFaceDetector(): (element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement) => Promise<Face[]> {
+export function detectFaceWithFaceDetector(): DetectFace {
   const fd = new FaceDetector();
   return (element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement) => fd.detect(element);
 }
 
-let openCVWorker: Worker;
-/**
- * Call this function beforehand when you are trying to detect faces under environment which is not guaranteed to implement FaceDetector
- * @returns {Promise<void>}
- */
-export async function prepareToDetectFaces(): Promise<void> {
+export function getFaceDetector(): Promise<DetectFace> {
   if ('FaceDetector' in window) {
-    return;
+    return Promise.resolve(detectFaceWithFaceDetector());
   }
-  return new Promise<void>((resolve, reject) => {
-    openCVWorker = new Worker('./opencv/worker.js');
+  return new Promise<DetectFace>((resolve, reject) => {
+    const openCVWorker = new Worker('./opencv/worker.js');
     openCVWorker.onmessage = ({ data }) => {
       if (data.type === 'load') {
-        return data.error ? reject(data.error) : resolve();
+        return data.error ? reject(data.error) : resolve(detectFaceWithOpenCV(openCVWorker));
       }
     }
   });
 }
 
-function detectFaceWithOpenCV(): (element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement) => Promise<Face[]> {
-  return async (element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement) => {
+function detectFaceWithOpenCV(openCVWorker: Worker): DetectFace {
+  const queue: ((faces: Face[]) => any)[] = [];
+  openCVWorker.onmessage = ({ data }) => {
+    switch (data.type) {
+      case 'detectFaces':
+        const resolve = queue.shift();
+        return resolve && resolve(data.faces.map(({ x, y, width, height }: Face['boundingBox']) => ({
+          // adjust differences of face area detected by FaceDetector and OpenCV
+          boundingBox: { x, y: y + height * 0.1, width, height },
+          landmarks: [],
+        })));
+    }
+  };
+  return (element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement) => {
     if (!(element instanceof HTMLCanvasElement)) {
       return Promise.reject(new Error('OpenCV implementation only accepts HTMLCanvasElement'));
     }
-    if (!openCVWorker) {
-      return Promise.reject(new Error('prepareToDetectFaces has to be called beforehand to enable OpenCV fallback'));
-    }
+    const result = new Promise<Face[]>(resolve => queue.push(resolve));
     openCVWorker.postMessage({ type: 'detectFaces', img: element.getContext('2d')!.getImageData(0, 0, element.width, element.height) });
-    return new Promise<Face[]>(resolve => openCVWorker.onmessage = ({ data }) => {
-      switch (data.type) {
-        case 'detectFaces':
-          return resolve(data.faces.map(({ x, y, width, height }: Face['boundingBox']) => ({
-            // adjust differences of face area detected by FaceDetector and OpenCV
-            boundingBox: { x, y: y + height * 0.1, width, height },
-            landmarks: [],
-          })));
-      }
-    });
+    return result;
   };
 }
