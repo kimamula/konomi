@@ -10,6 +10,8 @@ request.onload = function() {
     if (request.status === 200) {
       const data = new Uint8Array(request.response);
       cv.FS_createDataFile('/', 'haarcascade_frontalface_default.xml', data, true, false, false);
+      faceClassifier = new cv.CascadeClassifier();
+      faceClassifier.load('haarcascade_frontalface_default.xml');
       postMessage({ type: 'load' });
     } else {
       postMessage({ type: 'load', error: new Error(`Failed to load ${url}. status: ${request.status}`) });
@@ -26,26 +28,26 @@ self.onmessage = ({ data }) => {
   }
 };
 
-let faceCascade;
+let faceClassifier;
 function detectFaces(imageData) {
-  const img = cv.matFromImageData(imageData);
-	const imgGray = new cv.Mat();
-  cv.cvtColor(img, imgGray, cv.COLOR_RGBA2GRAY, 0);
-  const faces = new cv.RectVector();
-  if (!faceCascade) {
-    faceCascade = new cv.CascadeClassifier();
-    faceCascade.load('haarcascade_frontalface_default.xml');
-  }
-	faceCascade.detectMultiScale(imgGray, faces);
-
+  const srcMat = cv.matFromImageData(imageData);
+  const grayMat = new cv.Mat();
+  srcMat.data.set(imageData.data);
+  cv.cvtColor(srcMat, grayMat, cv.COLOR_RGBA2GRAY, 0);
+  const facesVect = new cv.RectVector();
+  const facesMat = new cv.Mat();
+  cv.pyrDown(grayMat, facesMat);
+  faceClassifier.detectMultiScale(facesMat, facesVect);
 	const rects = [];
-	for (let i = 0; i < faces.size(); i += 1) {
-		rects.push(faces.get(i));
+	for (let i = 0; i < facesVect.size(); i += 1) {
+	  const { x, y, width, height } = facesVect.get(i);
+		rects.push({ x: x * 2, y: y * 2, width: width * 2, height: height * 2 });
 	}
 
 	postMessage({ type: 'detectFaces', faces: rects });
 
-	img.delete();
-	faces.delete();
-	imgGray.delete();
+	srcMat.delete();
+	grayMat.delete();
+	facesVect.delete();
+	facesMat.delete();
 }
