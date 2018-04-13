@@ -1,5 +1,5 @@
 import { TfjsModel } from '../src/TfjsModel';
-import { detectFacesImageData } from '../src/detectFaces';
+import { DetectFace, detectFacesImageData } from '../src/detectFaces';
 
 async function loadModel(manifestFilePath: string): Promise<void> {
   window['tfjsModel'] = await TfjsModel.getInstance(manifestFilePath);
@@ -22,6 +22,7 @@ async function predict(src?: string): Promise<number[]> {
 
 async function detectAndPredict(src?: string): Promise<number[][]> {
   const tfjsModel = window['tfjsModel'] as TfjsModel;
+  const detectFace: DetectFace = e => new FaceDetector().detect(e);
   let img = document.querySelector('img')!;
   if (src && img.src !== src) {
     img.remove();
@@ -30,8 +31,11 @@ async function detectAndPredict(src?: string): Promise<number[][]> {
     img.src = src;
   }
   const imageDataList = (img.complete
-    ? detectFacesImageData(img)
-    : new Promise<ReturnType<typeof detectFacesImageData>>(resolve => img.onload = () => resolve(detectFacesImageData(img)))
+    ? detectFacesImageData(img, detectFace)
+    : Promise.race(
+        new Promise<ReturnType<typeof detectFacesImageData>>(resolve => img.onload = () => resolve(detectFacesImageData(img, detectFace))),
+        new Promise(resolve => setTimeout(() => resolve([]), 5000))
+      )
   ).then(faces => faces.map(({ imageData }) => imageData));
   return Promise.all(imageDataList.map(imageData => tfjsModel.predict(imageData)));
 }
@@ -42,8 +46,8 @@ function getImageData(img: HTMLImageElement): ImageData {
   canvas.width = 224;
   canvas.height = 224;
   console.log(img.width, img.height);
-  ctx.drawImage(img, 0,0, img.width, img.height, 0, 0, 224, 224);
-  return ctx.getImageData(0, 0, 224, 224);
+  ctx.drawImage(img, 0,0, img.width, img.height, 0, 0, 128, 128);
+  return ctx.getImageData(0, 0, 128, 128);
 }
 
 window['loadModel'] = loadModel;

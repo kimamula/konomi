@@ -29,11 +29,11 @@ self.__precacheManifest = [
   },
   {
     "url": "34342e9fed88a6fe37e38cddc9af7fb3.js",
-    "revision": "e7e3e918fdac12375c7b5e9407d13006"
+    "revision": "25db94746a9ffd51ca23f68e8c232df1"
   },
   {
     "url": "6ca0258f5e847422f2ddc9b8d077d6c0.js",
-    "revision": "b871a67fbf49c95f5460297f932e2f30"
+    "revision": "fb8d6e3913ce90dc81b3fb0a47ef0fa7"
   },
   {
     "url": "index.html",
@@ -49,31 +49,31 @@ self.__precacheManifest = [
   },
   {
     "url": "tfjs/group1-shard1of5",
-    "revision": "815e50504e615d027b88c3ef26f8137e"
+    "revision": "c9b6f23495b1cf767ac19ce66b64fc6d"
   },
   {
     "url": "tfjs/group1-shard2of5",
-    "revision": "b65f6b3a52d47a8cb3fdd7e559c4b02b"
+    "revision": "3dd1c575f71b1d67673107b84d35625e"
   },
   {
     "url": "tfjs/group1-shard3of5",
-    "revision": "3872ef2ec17c04ffdb4519a7d92709f2"
+    "revision": "a62f367c99171633f24b4da33c9dc485"
   },
   {
     "url": "tfjs/group1-shard4of5",
-    "revision": "1b56d2ffd1e9f09ff03d3c890b24ae79"
+    "revision": "46a4155749dd363d21a1486010fdfaa9"
   },
   {
     "url": "tfjs/group1-shard5of5",
-    "revision": "4bae6fafcdd41b5faf20f3c5b5f23b24"
+    "revision": "96fe96c1dd1900263d1f6be1cdf08409"
   },
   {
     "url": "tfjs/tensorflowjs_model.pb",
-    "revision": "31bef154b246db257bf21002da5f8392"
+    "revision": "4d09727db667640fb16d8e1d40925044"
   },
   {
     "url": "tfjs/weights_manifest.json",
-    "revision": "7e23d3998d3c9caacb6a8b8fdfe3ce59"
+    "revision": "4d64a9dcf8017125c0ec3e70a5d84130"
   }
 ].concat(self.__precacheManifest || []);
 workbox.precaching.suppressWarnings();

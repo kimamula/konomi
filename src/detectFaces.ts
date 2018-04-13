@@ -1,7 +1,7 @@
-export const captureSize = 224;
+export const captureSize = 128;
 
 export async function detectFacesDataURL(
-  element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, detectFace = detectFaceWithFaceDetector(), _writeFaceToCanvas = writeFaceToCanvas, _captureSize = captureSize
+  element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, detectFace: DetectFace, _writeFaceToCanvas = writeFaceToCanvas, _captureSize = captureSize
 ): Promise<string[]> {
   const rotateUnit = 5 * Math.PI/180;
   const sizeAfterRotation = Math.pow(Math.pow(element.width, 2) + Math.pow(element.height, 2), 0.5);
@@ -33,7 +33,7 @@ export async function detectFacesDataURL(
 }
 
 export async function detectFacesImageData(
-  element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, detectFace = detectFaceWithFaceDetector(), _writeFaceToCanvas = writeFaceToCanvas, _captureSize = captureSize
+  element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, detectFace: DetectFace, _writeFaceToCanvas = writeFaceToCanvas, _captureSize = captureSize
 ): Promise<(Face & { imageData: ImageData; usedBoundingBox: Face['boundingBox']; })[]> {
   return detectFace(element)
     .then(faces => faces.map(face => {
@@ -44,7 +44,6 @@ export async function detectFacesImageData(
 
 export function writeFaceToCanvas(element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, { boundingBox, landmarks }: Face, captureSize: number): { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D; usedBoundingBox: Face['boundingBox']; } {
   let { x, y, width, height } = boundingBox;
-  const [eye1, eye2] = landmarks.filter(({ type }) => type === 'eye');
   const [mouth] = landmarks.filter(({ type }) => type === 'mouth');
   // Sadly, FaceDetector implementation of Android Chrome currently does not equal to that of PC Chrome.
   // As machine learning is executed using images collected with FaceDetector of PC Chrome,
@@ -68,19 +67,11 @@ export function writeFaceToCanvas(element: HTMLImageElement | HTMLCanvasElement 
   } else if (width > height) {
     throw new Error('Unknown FaceDetector implementation');
   }
-  const rotation = eye1 && eye2
-    ? Math.atan((eye1.location.y - eye2.location.y) / (eye1.location.x - eye2.location.x))
-    : 0;
-  const ratio = Math.abs(Math.cos(rotation)) + Math.abs(Math.sin(rotation));
-  const srcSize = width * ratio;
-  const dstSize = captureSize * ratio;
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d')!;
   canvas.width = captureSize;
   canvas.height = captureSize;
-  ctx.translate(captureSize / 2, captureSize / 2);
-  ctx.rotate(-rotation);
-  ctx.drawImage(element, x - (srcSize - width) / 2, y - (srcSize - height) / 2, srcSize, srcSize, -dstSize / 2, -dstSize / 2, dstSize, dstSize);
+  ctx.drawImage(element, x, y, width, height, 0, 0, captureSize, captureSize);
   return { canvas, ctx, usedBoundingBox: { x, y, width, height } };
 }
 
@@ -110,9 +101,8 @@ function detectFaceWithOpenCV(openCVWorker: Worker): DetectFace {
     switch (data.type) {
       case 'detectFaces':
         const resolve = queue.shift();
-        return resolve && resolve(data.faces.map(({ x, y, width, height }: Face['boundingBox']) => ({
-          // adjust differences of face area detected by FaceDetector and OpenCV
-          boundingBox: { x, y: y + height * 0.1, width, height },
+        return resolve && resolve(data.faces.map((boundingBox: Face['boundingBox']) => ({
+          boundingBox,
           landmarks: [],
         })));
     }

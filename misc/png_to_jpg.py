@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from PIL import Image
 from os import listdir
 from os.path import isfile, isdir, join, splitext
@@ -13,4 +15,5 @@ for subdir in subdirs:
         image = Image.open(join(org_dir, subdir, f))
         bname, _ = splitext(f)
         rgb_im = image.convert('RGB')
-        rgb_im.save(join(dest_dir, subdir, '{}.jpg'.format(bname)))
+        for angle in (-20, -10, 0, 10, 20):
+            rgb_im.rotate(angle).save(join(dest_dir, subdir, '{}_nohash_{}.jpg'.format(bname, angle)))

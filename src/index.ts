@@ -2,6 +2,8 @@ import { detectFacesImageData, getFaceDetector } from './detectFaces';
 import { TfjsModel } from './TfjsModel';
 import screenfull from 'screenfull';
 
+const likeIndex = 1;
+
 const canvas = document.querySelector('canvas')!;
 const context = canvas.getContext('2d')!;
 const message = document.querySelector('.message')!;
@@ -68,7 +70,7 @@ Promise
         return tfjsModel
           .predict(imageData)
           .then(scores => {
-            const score = Math.max(scores[2], 0);
+            const score = Math.max(scores[likeIndex], 0);
             let hexadecimal = (score === 0 ? 255 : Math.floor((1 - score) * 256)).toString(16);
             hexadecimal = hexadecimal.length === 1 ? `0${hexadecimal}` : hexadecimal;
             const color = `#ff${hexadecimal}00`;
