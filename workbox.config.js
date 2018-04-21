@@ -1,7 +1,7 @@
 module.exports = {
   globDirectory: 'docs/',
   globPatterns: [
-    '**\/*.{js,css,html,png,mp3}',
+    '**\/*.{js,css,html,png}',
     '**\/opencv\/*',
     '**\/tfjs\/*',
   ],

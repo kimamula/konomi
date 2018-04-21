@@ -11,7 +11,6 @@ const mainContents = document.querySelector('.main-contents')!;
 const flipCamera = document.querySelector('.flip-camera')!;
 const forceLandscape = document.querySelector('.force-landscape')!;
 const video = document.querySelector('video')!;
-const audio = document.querySelector('audio')!;
 const buttons = document.querySelector('.buttons')!;
 const play = document.querySelector('.play')!;
 const pause = document.querySelector('.pause')!;
@@ -61,12 +60,12 @@ Promise
         context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, canvas.width, canvas.height);
         if (framesSinceLastDetection >= intervalFrames) {
           framesSinceLastDetection = 0;
+          if (Math.max.apply(null, detectedFaces.map(({ score }) => score)) >= 0.95) {
+            confirm('結婚してください');
+          }
           detectFacesImageData(canvas, detectFace)
             .then(facesImageData => Promise.all(facesImageData.map(calcScoreAndColor)))
-            .then(_detectedFaces => {
-              detectedFaces = _detectedFaces;
-              Math.max.apply(null, _detectedFaces.map(({ score }) => score)) >= 0.95 ? audio.play() : audio.pause();
-            })
+            .then(_detectedFaces => detectedFaces = _detectedFaces)
             .catch(err => console.error(err));
         }
         markDetectedFace();
