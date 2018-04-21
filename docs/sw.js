@@ -24,24 +24,32 @@ workbox.skipWaiting();
  */
 self.__precacheManifest = [
   {
-    "url": "330df6ab5699c2016aa1d93deb7a72de.png",
-    "revision": "561dd548067fbaea3278683f9128b8a0"
+    "url": "1dbeb11741f075e691863831d00b55f2.png",
+    "revision": "a4b3cec594b2f9f36e110e5b080ce0cc"
   },
   {
     "url": "34342e9fed88a6fe37e38cddc9af7fb3.js",
-    "revision": "8c02568a1170758d54e6aff9bedbf31a"
+    "revision": "7623940ba5769b1ac78ec3702c1bd4e8"
   },
   {
-    "url": "4b504b62885064599fadd3002f0559cf.mp3",
+    "url": "63a5b690b44ed1a27060e658144a01c1.mp3",
     "revision": "48e6b44e74e6c2485942c27f1c1387fb"
   },
   {
     "url": "6ca0258f5e847422f2ddc9b8d077d6c0.js",
-    "revision": "6dc9499d298c2af8ca4851b7c404fdce"
+    "revision": "6a8f51141dff1f78e92f2da188dd708f"
+  },
+  {
+    "url": "8c64d3a1d6ea8aee1315d4da72ed27e7.png",
+    "revision": "4f85e93da100083112a94e7c47da28fe"
+  },
+  {
+    "url": "d5ac280df4b37bee7e048998ba55c8c4.png",
+    "revision": "561dd548067fbaea3278683f9128b8a0"
   },
   {
     "url": "index.html",
-    "revision": "41ebc31b14643debb1823adb122f6263"
+    "revision": "55826948ad21a2f23f11259ccfdd4944"
   },
   {
     "url": "opencv/opencv.js",
