@@ -51,7 +51,7 @@ Promise
           return;
         }
         requestAnimationFrame(renderLoop);
-        if (video.paused) {
+        if (buttons.classList.contains('pausing')) {
           return;
         }
         framesSinceLastDetection += 1;
@@ -110,7 +110,7 @@ Promise
       let isFlipping = false;
       flipCamera.addEventListener('click', async e => {
         e.stopPropagation();
-        if (isFlipping || handlingPlay || video.paused) {
+        if (isFlipping || handlingPlay || buttons.classList.contains('pausing')) {
           return;
         }
         isFlipping = true;
@@ -146,15 +146,12 @@ Promise
         return;
       }
       handlingPlay = true;
-      await Promise.all([
-        video.play(),
-        navigator.mediaDevices
-          .getUserMedia({ video: { deviceId: { exact: videoInputDevices[currentDeviceIndex] } } })
-          .then(
-            mediaStream => video.srcObject = mediaStream,
-            err => console.error(err)
-          )
-      ]);
+      await navigator.mediaDevices
+        .getUserMedia({ video: { deviceId: { exact: videoInputDevices[currentDeviceIndex] } } })
+        .then(
+          mediaStream => video.srcObject = mediaStream,
+          err => console.error(err)
+        );
       buttons.classList.remove('pausing');
       handlingPlay = false;
     });
@@ -163,7 +160,6 @@ Promise
       if (handlingPlay) {
         return;
       }
-      video.pause();
       (video.srcObject as MediaStream).getTracks().forEach(track => track.stop());
       buttons.classList.add('pausing');
     });
