@@ -30,12 +30,12 @@ async function detectAndPredict(src?: string): Promise<number[][]> {
     document.body.appendChild(img);
     img.src = src;
   }
-  const imageDataList = (img.complete
+  const imageDataList = await (img.complete
     ? detectFacesImageData(img, detectFace)
-    : Promise.race(
-        new Promise<ReturnType<typeof detectFacesImageData>>(resolve => img.onload = () => resolve(detectFacesImageData(img, detectFace))),
-        new Promise(resolve => setTimeout(() => resolve([]), 5000))
-      )
+    : Promise.race([
+        new Promise<(Face & { imageData: ImageData; usedBoundingBox: Face['boundingBox']; })[]>(resolve => img.onload = () => resolve(detectFacesImageData(img, detectFace))),
+        new Promise<(Face & { imageData: ImageData; usedBoundingBox: Face['boundingBox']; })[]>(resolve => setTimeout(() => resolve([]), 20000))
+      ])
   ).then(faces => faces.map(({ imageData }) => imageData));
   return Promise.all(imageDataList.map(imageData => tfjsModel.predict(imageData)));
 }

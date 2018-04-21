@@ -9,7 +9,7 @@ export class TfjsModel {
       .then(model => new TfjsModel(model));
   }
 
-  constructor(private model: FrozenModel) { }
+  private constructor(private model: FrozenModel) { }
 
   predict(imageData: ImageData): Promise<number[]> {
     const input = tfc.fromPixels(imageData).asType('float32').sub(PREPROCESS_DIVISOR).div(PREPROCESS_DIVISOR);

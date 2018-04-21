@@ -16,7 +16,6 @@
     "misc/**/*"
   ],
   "exclude": [
-    "node_modules",
-    "misc/predict.ts"
+    "node_modules"
   ]
 }

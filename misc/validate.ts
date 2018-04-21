@@ -19,6 +19,8 @@ function predict(page: Page, category: string, categoryIndex: number): Promise<a
     }
     let total = 0;
     let correct = 0;
+    let veryWrong = 0;
+    let veryCorrect = 0;
     for (const file of files) {
       const src = `http://localhost:1234/dist/images_png_bin/${category}/${file}`;
       if (!page.url().startsWith('http://localhost:1234')) {
@@ -32,9 +34,15 @@ function predict(page: Page, category: string, categoryIndex: number): Promise<a
       const scores = await page.evaluate((src) => (window['predict'] as Function)(src), src);
       if (scores[categoryIndex] > 0.5) {
         correct += 1;
+        if (scores[categoryIndex] > 0.95) {
+          veryCorrect += 1;
+        }
+      }
+      if (scores[categoryIndex] <= 0.05) {
+        veryWrong += 1;
       }
       total += 1;
-      console.log(`Prediction result for ${category}: ${correct} correct, ${total} total, ${(correct / total) * 100}%`);
+      console.log(`Prediction result for ${category}: ${correct} correct, ${veryCorrect} veryCorrect, ${veryWrong} veryWrong, ${total} total, ${(correct / total) * 100}% correct, ${(veryCorrect / total) * 100}% veryCorrect, ${(veryWrong / total) * 100}% veryWrong`);
     }
     resolve();
   }));

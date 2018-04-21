@@ -1,4 +1,4 @@
-# konomi
+# Konomi
 Score human faces based on my personal preference.
 
 Live demo is running at https://kimamula.github.io/konomi/
@@ -12,6 +12,10 @@ $ npm isntall
 $ npm start
 ```
 
+### __NOTE__
+
+Currently, you have to edit `node_modules/@tensorflow/tfjs-converter/dist/operations/executors/matrices_executor.js` before you run `npm start` as described in https://github.com/tensorflow/tfjs/issues/85.
+
 ## How did I execute learning
 
 1. Collect face images from Web by using [`FaceDetector`](https://wicg.github.io/shape-detection-api/#face-detection-api).
@@ -20,21 +24,13 @@ $ npm start
 ```
 data/
     images/
-        _/      -> face images I do not like
+        _/      -> face images I do not like, including images which are not actually faces (error of FaceDetector)
             _001.png
             _002.png
-            ...
-        error/  -> images which are not actually faces (detection error)
-            error001.png
-            error002.png
             ...
         like/   -> face images I like
             like001.png
             like002.png
-            ...
-        other/   -> face images which I do not want to include as candidates, such as faces on illustrations
-            other001.png
-            other002.png
             ...
 ```
 
