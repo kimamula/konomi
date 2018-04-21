@@ -11,6 +11,9 @@ const mainContents = document.querySelector('.main-contents')!;
 const flipCamera = document.querySelector('.flip-camera')!;
 const forceLandscape = document.querySelector('.force-landscape')!;
 const video = document.querySelector('video')!;
+const buttons = document.querySelector('.buttons')!;
+const play = document.querySelector('.play')!;
+const pause = document.querySelector('.pause')!;
 
 function orientationAPI(): Promise<{ lock(orientation: string): Promise<void>; unlock(): void; }> {
   return (typeof window.orientation !== 'undefined') && (screen as any).orientation && (screen as any).orientation.lock
@@ -47,6 +50,9 @@ Promise
           return;
         }
         requestAnimationFrame(renderLoop);
+        if (video.paused) {
+          return;
+        }
         framesSinceLastDetection += 1;
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -96,12 +102,13 @@ Promise
     };
 
     const videoInputDevicesLength = videoInputDevices.length;
+    let currentDeviceIndex = 0;
+    let handlingPlay = false;
     if (videoInputDevicesLength > 1) {
       let isFlipping = false;
-      let currentDeviceIndex = 0;
       flipCamera.addEventListener('click', async e => {
         e.stopPropagation();
-        if (isFlipping) {
+        if (isFlipping || handlingPlay || video.paused) {
           return;
         }
         isFlipping = true;
@@ -131,6 +138,33 @@ Promise
         }
       }) : Promise.reject(null))
       .catch(() => forceLandscape.classList.add('hidden'));
+    play.addEventListener('click', async e => {
+      e.stopPropagation();
+      if (handlingPlay) {
+        return;
+      }
+      handlingPlay = true;
+      await Promise.all([
+        video.play(),
+        navigator.mediaDevices
+          .getUserMedia({ video: { deviceId: { exact: videoInputDevices[currentDeviceIndex] } } })
+          .then(
+            mediaStream => video.srcObject = mediaStream,
+            err => console.error(err)
+          )
+      ]);
+      buttons.classList.remove('pausing');
+      handlingPlay = false;
+    });
+    pause.addEventListener('click', e => {
+      e.stopPropagation();
+      if (handlingPlay) {
+        return;
+      }
+      video.pause();
+      (video.srcObject as MediaStream).getTracks().forEach(track => track.stop());
+      buttons.classList.add('pausing');
+    });
   })
   .catch(e => {
     console.error(e);
