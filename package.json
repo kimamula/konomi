@@ -7,9 +7,9 @@
     "url": "git+https://github.com/kimamula/konomi.git"
   },
   "scripts": {
-    "build": "rm -rf docs/* && cp -r data/tfjs docs && cp -r data/opencv docs && parcel build src/index.html --out-dir docs --public-url /konomi && workbox generateSW workbox.config.js",
-    "validate": "cp -r data/images_png_bin dist && parcel build misc/predict.ts && tsc && node misc/validate",
-    "start": "cp -r data/tfjs dist && cp -r data/opencv dist && parcel src/index.html"
+    "build": "rimraf docs/* && cpx 'data/{tfjs,opencv}/*' docs && parcel build src/index.html --out-dir docs --public-url /konomi && workbox generateSW workbox.config.js",
+    "validate": "cpx 'data/images_png_bin/**/*' dist/images_png_bin && parcel build misc/predict.ts && tsc && node misc/validate",
+    "start": "rimraf dist/* && cpx 'data/{tfjs,opencv}/*' dist && parcel src/index.html"
   },
   "author": "kimamula",
   "license": "MIT",
@@ -25,8 +25,10 @@
     "@types/screenfull": "^3.3.1",
     "@types/selenium-webdriver": "^3.0.8",
     "@types/sharp": "^0.17.7",
+    "cpx": "^1.5.0",
     "parcel-bundler": "^1.6.2",
     "puppeteer": "^1.2.0",
+    "rimraf": "^2.6.2",
     "screenfull": "^3.3.2",
     "selenium-webdriver": "^3.6.0",
     "sharp": "^0.20.1",
