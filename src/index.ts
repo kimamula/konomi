@@ -11,6 +11,7 @@ const mainContents = document.querySelector('.main-contents')!;
 const flipCamera = document.querySelector('.flip-camera')!;
 const forceLandscape = document.querySelector('.force-landscape')!;
 const video = document.querySelector('video')!;
+const audio = document.querySelector('audio')!;
 const buttons = document.querySelector('.buttons')!;
 const play = document.querySelector('.play')!;
 const pause = document.querySelector('.pause')!;
@@ -44,7 +45,7 @@ Promise
       const mediaStream = video.srcObject;
       const intervalFrames = 30;
       let framesSinceLastDetection = 0;
-      let detectedFaces: { usedBoundingBox: Face['boundingBox']; imageData: ImageData; score: string; color: string; }[] = [];
+      let detectedFaces: { usedBoundingBox: Face['boundingBox']; imageData: ImageData; scoreStr: string; color: string; score: number; }[] = [];
       (async function renderLoop() {
         if (video.srcObject !== mediaStream) {
           return;
@@ -61,10 +62,11 @@ Promise
         if (framesSinceLastDetection >= intervalFrames) {
           framesSinceLastDetection = 0;
           detectFacesImageData(canvas, detectFace)
-            .then(facesImageData =>
-              Promise.all(facesImageData.map(calcScoreAndColor))
-            )
-            .then(_detectedFaces => detectedFaces = _detectedFaces)
+            .then(facesImageData => Promise.all(facesImageData.map(calcScoreAndColor)))
+            .then(_detectedFaces => {
+              detectedFaces = _detectedFaces;
+              Math.max.apply(null, _detectedFaces.map(({ score }) => score)) >= 0.95 ? audio.play() : audio.pause();
+            })
             .catch(err => console.error(err));
         }
         markDetectedFace();
@@ -72,7 +74,7 @@ Promise
 
       function calcScoreAndColor(
         { usedBoundingBox, imageData }: { usedBoundingBox: Face['boundingBox']; imageData: ImageData; }
-      ): Promise<{ usedBoundingBox: Face['boundingBox']; imageData: ImageData; score: string; color: string; }> {
+      ): Promise<{ usedBoundingBox: Face['boundingBox']; imageData: ImageData; scoreStr: string; color: string; score: number; }> {
         return tfjsModel
           .predict(imageData)
           .then(scores => {
@@ -80,12 +82,12 @@ Promise
             let hexadecimal = (score === 0 ? 255 : Math.floor((1 - score) * 256)).toString(16);
             hexadecimal = hexadecimal.length === 1 ? `0${hexadecimal}` : hexadecimal;
             const color = `#ff${hexadecimal}00`;
-            return { usedBoundingBox, imageData, score: (score * 100).toFixed(2), color };
+            return { usedBoundingBox, imageData, scoreStr: (score * 100).toFixed(2), color, score };
           });
       }
 
       function markDetectedFace() {
-        for (const { usedBoundingBox, score, color } of detectedFaces) {
+        for (const { usedBoundingBox, scoreStr, color } of detectedFaces) {
           const { x, y, width, height } = usedBoundingBox;
           context.strokeStyle = color;
           context.fillStyle = color;
@@ -96,7 +98,7 @@ Promise
           context.stroke();
           context.textAlign = 'right';
           context.textBaseline = 'bottom';
-          context.fillText(`${score} / 100`, x + width - 5, y + height - 5);
+          context.fillText(`${scoreStr} / 100`, x + width - 5, y + height - 5);
         }
       }
     };
