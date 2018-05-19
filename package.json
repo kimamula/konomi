@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "rimraf docs/* && cpx 'data/{tfjs,opencv}/*' docs && parcel build src/index.html --out-dir docs --public-url /konomi && workbox generateSW workbox.config.js",
-    "validate": "cpx 'data/images_png_bin/**/*' dist/images_png_bin && parcel build misc/predict.ts && tsc && node misc/validate",
+    "validate": "cpx 'data/images_png/**/*' dist/images_png && parcel build misc/predict.ts && tsc && node misc/validate",
     "start": "rimraf dist/* && cpx 'data/{tfjs,opencv}/*' dist && parcel src/index.html"
   },
   "author": "kimamula",
@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/kimamula/konomi#readme",
   "dependencies": {
-    "@tensorflow/tfjs-converter": "^0.1.0",
+    "@tensorflow/tfjs-converter": "^0.2.0",
     "@tensorflow/tfjs-core": "^0.6.0",
     "@types/node": "^9.4.7",
     "@types/puppeteer": "^1.2.0",

@@ -33,7 +33,7 @@ self.__precacheManifest = [
   },
   {
     "url": "6ca0258f5e847422f2ddc9b8d077d6c0.js",
-    "revision": "cab4fb0d247ca68fd1a4ec5e5276ef79"
+    "revision": "13373892e96451be3a5d3559320b30cb"
   },
   {
     "url": "8c64d3a1d6ea8aee1315d4da72ed27e7.png",
@@ -77,7 +77,7 @@ self.__precacheManifest = [
   },
   {
     "url": "tfjs/tensorflowjs_model.pb",
-    "revision": "4d09727db667640fb16d8e1d40925044"
+    "revision": "bdf812dbae25c02ac22d90ddf8303b4e"
   },
   {
     "url": "tfjs/weights_manifest.json",

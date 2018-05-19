@@ -5,16 +5,10 @@ Live demo is running at https://kimamula.github.io/konomi/
 
 ## Run locally
 
-You have to enable [Shape Detection API](https://www.chromestatus.com/feature/4757990523535360) to run this app locally.
-
 ```sh
 $ npm isntall
 $ npm start
 ```
-
-### __NOTE__
-
-Currently, you have to edit `node_modules/@tensorflow/tfjs-converter/dist/operations/executors/matrices_executor.js` before you run `npm start` as described in https://github.com/tensorflow/tfjs/issues/85.
 
 ## How did I execute learning
 

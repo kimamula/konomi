@@ -1,5 +1,5 @@
 import { TfjsModel } from '../src/TfjsModel';
-import { DetectFace, detectFacesImageData } from '../src/detectFaces';
+import { captureSize, DetectFace, detectFacesImageData } from '../src/detectFaces';
 
 async function loadModel(manifestFilePath: string): Promise<void> {
   window['tfjsModel'] = await TfjsModel.getInstance(manifestFilePath);
@@ -43,11 +43,11 @@ async function detectAndPredict(src?: string): Promise<number[][]> {
 function getImageData(img: HTMLImageElement): ImageData {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d')!;
-  canvas.width = 224;
-  canvas.height = 224;
+  canvas.width = captureSize;
+  canvas.height = captureSize;
   console.log(img.width, img.height);
-  ctx.drawImage(img, 0,0, img.width, img.height, 0, 0, 128, 128);
-  return ctx.getImageData(0, 0, 128, 128);
+  ctx.drawImage(img, 0,0, img.width, img.height, 0, 0, captureSize, captureSize);
+  return ctx.getImageData(0, 0, captureSize, captureSize);
 }
 
 window['loadModel'] = loadModel;

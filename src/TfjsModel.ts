@@ -1,5 +1,6 @@
 import * as tfc from '@tensorflow/tfjs-core';
 import { loadFrozenModel, FrozenModel } from '@tensorflow/tfjs-converter';
+import { captureSize } from './detectFaces';
 
 const PREPROCESS_DIVISOR = tfc.scalar(255 / 2);
 
@@ -12,8 +13,15 @@ export class TfjsModel {
   private constructor(private model: FrozenModel) { }
 
   predict(imageData: ImageData): Promise<number[]> {
-    const input = tfc.fromPixels(imageData).asType('float32').sub(PREPROCESS_DIVISOR).div(PREPROCESS_DIVISOR);
-    const prediction = this.model.execute({ input }, 'final_result') as tfc.Tensor;
+    const prediction = tfc.tidy(() => {
+      const input = tfc
+        .fromPixels(imageData)
+        .toFloat()
+        .sub(PREPROCESS_DIVISOR)
+        .div(PREPROCESS_DIVISOR)
+        .reshape([1, captureSize, captureSize, 3]);
+      return this.model.execute({ input }, 'final_result') as tfc.Tensor;
+    });
     return prediction.data().then(values => {
       prediction.dispose();
       return Array.from(values);
