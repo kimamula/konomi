@@ -22,8 +22,8 @@ function orientationAPI(): Promise<{ lock(orientation: string): Promise<void>; u
 }
 
 const manifestFilePath = `${location.pathname.startsWith('/konomi/') ? '/konomi' : '/dist'}/tfjs`;
-Promise
-  .all([
+navigator.mediaDevices.getUserMedia({ video: true })
+  .then(() => Promise.all([
     navigator.mediaDevices.enumerateDevices()
       .then(devices => devices.filter(({ kind }) => kind === 'videoinput').map(({ deviceId }) => deviceId))
       .then(videoInputDevices => videoInputDevices.length === 0
@@ -33,7 +33,7 @@ Promise
     ),
     TfjsModel.getInstance(manifestFilePath),
     getFaceDetector(),
-  ])
+  ]))
   .then(([mediaDevicesInfo, tfjsModel, detectFace]) => {
     const { mediaStream, videoInputDevices } = mediaDevicesInfo;
     message.classList.add('hidden');

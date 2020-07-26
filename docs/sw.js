@@ -24,28 +24,28 @@ workbox.skipWaiting();
  */
 self.__precacheManifest = [
   {
-    "url": "1dbeb11741f075e691863831d00b55f2.png",
-    "revision": "a4b3cec594b2f9f36e110e5b080ce0cc"
+    "url": "38cfd497e03c71860e2f82f00b57c116.js",
+    "revision": "4eedd75d4698f594582d11d24ce9992f"
   },
   {
-    "url": "34342e9fed88a6fe37e38cddc9af7fb3.js",
-    "revision": "e7e3e918fdac12375c7b5e9407d13006"
-  },
-  {
-    "url": "6ca0258f5e847422f2ddc9b8d077d6c0.js",
-    "revision": "13373892e96451be3a5d3559320b30cb"
-  },
-  {
-    "url": "8c64d3a1d6ea8aee1315d4da72ed27e7.png",
+    "url": "3ebbe2c659b0794368436da9ef94b740.png",
     "revision": "4f85e93da100083112a94e7c47da28fe"
   },
   {
-    "url": "d5ac280df4b37bee7e048998ba55c8c4.png",
+    "url": "8e2b38d45099c3a0986c5912fc16dfea.png",
+    "revision": "a4b3cec594b2f9f36e110e5b080ce0cc"
+  },
+  {
+    "url": "aca1c67189d0fab7034d82d4fc34d3e4.js",
+    "revision": "a2e3813e9e2316a8d011fe813bdb0bc4"
+  },
+  {
+    "url": "d245fec481001cc136549f4c48368286.png",
     "revision": "561dd548067fbaea3278683f9128b8a0"
   },
   {
     "url": "index.html",
-    "revision": "6b84559113e0e0ece8b5e8be365248b2"
+    "revision": "699c03beacc8c2edc629758fa27a75f2"
   },
   {
     "url": "opencv/opencv.js",
