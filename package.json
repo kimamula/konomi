@@ -27,7 +27,7 @@
     "@types/sharp": "^0.17.7",
     "cpx": "^1.5.0",
     "parcel-bundler": "^1.10.0",
-    "puppeteer": "^1.2.0",
+    "puppeteer": "^1.13.0",
     "rimraf": "^2.6.2",
     "screenfull": "^3.3.2",
     "selenium-webdriver": "^3.6.0",
