@@ -1,5 +1,5 @@
 # Konomi
-Score human faces based on my personal preference.
+Human face detection and classification.
 
 Live demo is running at https://kimamula.github.io/konomi/
 
