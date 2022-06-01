@@ -31,7 +31,7 @@
     "rimraf": "^2.6.2",
     "screenfull": "^3.3.2",
     "selenium-webdriver": "^3.6.0",
-    "sharp": "^0.20.1",
+    "sharp": "^0.30.5",
     "tslib": "^1.9.0",
     "typescript": "^2.8.1",
     "workbox-cli": "^3.0.0"
